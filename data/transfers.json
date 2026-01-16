@@ -1,0 +1,20 @@
+[
+  {
+    "id": "3d46f3a2-c2a1-4d0c-803e-3dd0ce0567d8",
+    "createdAt": "2026-01-16T05:21:03.434Z",
+    "status": "completed",
+    "productId": 6,
+    "fromWarehouseId": 3,
+    "toWarehouseId": 1,
+    "quantity": 1,
+    "note": "testing 1 stock transfer",
+    "createdBy": "system",
+    "productName": "TEST-1234",
+    "fromWarehouseName": "Southern Hub",
+    "toWarehouseName": "Main Distribution Center",
+    "meta": {
+      "reason": "testing 1 stock transfer",
+      "referenceNo": null
+    }
+  }
+]

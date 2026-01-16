@@ -17,6 +17,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import WarehouseIcon from "@mui/icons-material/Warehouse";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import MenuIcon from "@mui/icons-material/Menu";
 
 const navItems = [
@@ -35,6 +36,11 @@ const navItems = [
     label: "Stock Levels",
     href: "/stock",
     icon: <AssessmentIcon fontSize="small" />,
+  },
+  {
+    label: "Transfers",
+    href: "/transfers",
+    icon: <SwapHorizIcon fontSize="small" />,
   },
 ];
 
