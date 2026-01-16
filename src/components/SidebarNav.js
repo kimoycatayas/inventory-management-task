@@ -18,6 +18,7 @@ import InventoryIcon from "@mui/icons-material/Inventory";
 import WarehouseIcon from "@mui/icons-material/Warehouse";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import WarningIcon from "@mui/icons-material/Warning";
 import MenuIcon from "@mui/icons-material/Menu";
 
 const navItems = [
@@ -41,6 +42,11 @@ const navItems = [
     label: "Transfers",
     href: "/transfers",
     icon: <SwapHorizIcon fontSize="small" />,
+  },
+  {
+    label: "Alerts",
+    href: "/alerts",
+    icon: <WarningIcon fontSize="small" />,
   },
 ];
 

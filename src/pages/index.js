@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Typography,
@@ -41,11 +41,14 @@ import {
 } from 'recharts';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import DashboardCard from '@/components/DashboardCard';
+import WarningIcon from '@mui/icons-material/Warning';
 
 const LOW_STOCK_THRESHOLD = 10;
 
 export default function Home() {
   const { products, warehouses, stock, loading, error, lastUpdated, refresh } = useDashboardData();
+  const [alerts, setAlerts] = useState([]);
+  const [alertsLoading, setAlertsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -53,6 +56,25 @@ export default function Home() {
   const [sortDirection, setSortDirection] = useState('asc');
   const [timeframe, setTimeframe] = useState('month');
   const [selectedWarehouse, setSelectedWarehouse] = useState('all');
+
+  // Fetch alerts
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      setAlertsLoading(true);
+      try {
+        const response = await fetch('/api/alerts');
+        if (response.ok) {
+          const data = await response.json();
+          setAlerts(data);
+        }
+      } catch (err) {
+        console.error('Error fetching alerts:', err);
+      } finally {
+        setAlertsLoading(false);
+      }
+    };
+    fetchAlerts();
+  }, [lastUpdated]);
 
   const kpis = useMemo(() => {
     const totalUnits = stock.reduce((sum, item) => sum + item.quantity, 0);
@@ -350,6 +372,44 @@ export default function Home() {
                 </Typography>
               </DashboardCard>
             </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Box
+                component={Link}
+                href="/alerts"
+                sx={{
+                  textDecoration: 'none',
+                  display: 'block',
+                }}
+              >
+                <DashboardCard
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': {
+                      boxShadow: 4,
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Active alerts
+                      </Typography>
+                      <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, color: 'error.main' }}>
+                        {alertsLoading ? '...' : alerts.filter((a) => a.status === 'active').length}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {alertsLoading
+                          ? 'Loading...'
+                          : alerts.filter((a) => a.stockStatus === 'critical' && a.status !== 'resolved' && a.status !== 'dismissed').length > 0
+                          ? `${alerts.filter((a) => a.stockStatus === 'critical' && a.status !== 'resolved' && a.status !== 'dismissed').length} critical`
+                          : 'Requiring attention'}
+                      </Typography>
+                    </Box>
+                    <WarningIcon sx={{ color: 'error.main', fontSize: 32 }} />
+                  </Box>
+                </DashboardCard>
+              </Box>
+            </Grid>
           </>
         )}
       </Grid>
@@ -486,6 +546,89 @@ export default function Home() {
           )}
         </Grid>
       </Grid>
+
+      {/* Critical Alerts Section */}
+      {!alertsLoading && alerts.filter((a) => a.status === 'active' && a.stockStatus === 'critical').length > 0 && (
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12}>
+            <DashboardCard
+              title="Critical Stock Alerts"
+              subtitle="Products requiring immediate attention"
+              action={
+                <Button component={Link} href="/alerts" variant="outlined" size="small">
+                  View All Alerts
+                </Button>
+              }
+            >
+              <Box sx={{ mt: 2 }}>
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {alerts.filter((a) => a.status === 'active' && a.stockStatus === 'critical').length} critical
+                    alert{alerts.filter((a) => a.status === 'active' && a.stockStatus === 'critical').length !== 1 ? 's' : ''}{' '}
+                    requiring immediate action
+                  </Typography>
+                </Alert>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Product</TableCell>
+                        <TableCell align="right">Current Stock</TableCell>
+                        <TableCell align="right">Reorder Point</TableCell>
+                        <TableCell align="right">Recommended Order</TableCell>
+                        <TableCell align="center">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {alerts
+                        .filter((a) => a.status === 'active' && a.stockStatus === 'critical')
+                        .slice(0, 5)
+                        .map((alert) => (
+                          <TableRow key={alert.id} sx={{ bgcolor: 'rgba(244, 67, 54, 0.08)' }}>
+                            <TableCell>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {alert.productName}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {alert.productSku}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: 'error.main' }}>
+                                {alert.currentStock.toLocaleString()}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography variant="body2" color="text.secondary">
+                                {alert.reorderPoint.toLocaleString()}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                                {alert.recommendedReorderQuantity.toLocaleString()} units
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Button
+                                size="small"
+                                component={Link}
+                                href="/alerts"
+                                variant="outlined"
+                                color="error"
+                              >
+                                View Details
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            </DashboardCard>
+          </Grid>
+        </Grid>
+      )}
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} md={5}>
