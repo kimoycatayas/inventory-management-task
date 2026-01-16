@@ -2,16 +2,25 @@ import { useState } from "react";
 import { Box, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import SidebarNav from "@/components/SidebarNav";
+import KeyboardShortcutsHelp from "@/components/KeyboardShortcutsHelp";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 export default function AppLayout({ children }) {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const drawerWidth = collapsed && isDesktop ? 88 : 260;
 
   const handleMobileToggle = () => setMobileOpen((prev) => !prev);
   const handleCollapseToggle = () => setCollapsed((prev) => !prev);
+
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts({
+    onOpenHelp: () => setShortcutsHelpOpen(true),
+    onCloseHelp: () => setShortcutsHelpOpen(false),
+  });
 
   return (
     <Box
@@ -43,6 +52,13 @@ export default function AppLayout({ children }) {
           <Box sx={{ maxWidth: 1240, mx: "auto" }}>{children}</Box>
         </Box>
       </Box>
+      
+      {/* Global keyboard shortcuts help */}
+      <KeyboardShortcutsHelp
+        open={shortcutsHelpOpen}
+        onOpen={() => setShortcutsHelpOpen(true)}
+        onClose={() => setShortcutsHelpOpen(false)}
+      />
     </Box>
   );
 }

@@ -840,6 +840,9 @@ export default function Home() {
                     setSearchQuery(e.target.value);
                     setPage(0);
                   }}
+                  inputProps={{
+                    'data-shortcut': 'search',
+                  }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
