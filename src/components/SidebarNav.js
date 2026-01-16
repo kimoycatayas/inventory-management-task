@@ -12,6 +12,7 @@ import {
   IconButton,
   Divider,
   Tooltip,
+  useTheme,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import InventoryIcon from "@mui/icons-material/Inventory";
@@ -20,6 +21,9 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import WarningIcon from "@mui/icons-material/Warning";
 import MenuIcon from "@mui/icons-material/Menu";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import { useThemeMode } from "@/context/ThemeModeContext";
 
 const navItems = [
   { label: "Home", href: "/", icon: <HomeIcon fontSize="small" /> },
@@ -59,9 +63,19 @@ export default function SidebarNav({
   drawerWidth,
 }) {
   const router = useRouter();
-  const sidebarBg = "#141414";
-  const sidebarBorder = "rgba(255, 255, 255, 0.08)";
-  const activeBg = "rgba(46, 125, 50, 0.18)";
+  const theme = useTheme();
+  const { mode, toggleMode } = useThemeMode();
+  const isDark = mode === 'dark';
+  
+  // Use theme-aware colors
+  const sidebarBg = isDark ? '#1a1a1a' : '#141414';
+  const sidebarBorder = theme.palette.divider;
+  const activeBg = isDark ? 'rgba(46, 125, 50, 0.24)' : 'rgba(46, 125, 50, 0.18)';
+  const sidebarText = isDark ? '#e0e0e0' : '#f5f5f5';
+  const sidebarTextSecondary = isDark ? '#b0b0b0' : '#c7c7c7';
+  const activeText = isDark ? '#8bd69b' : '#dff1e0';
+  const iconColor = isDark ? '#9a9a9a' : '#9a9a9a';
+  const activeIconColor = isDark ? '#8bd69b' : '#8bd69b';
 
   const drawerContent = (
     <Box
@@ -70,7 +84,7 @@ export default function SidebarNav({
         display: "flex",
         flexDirection: "column",
         bgcolor: sidebarBg,
-        color: "#f5f5f5",
+        color: sidebarText,
       }}
     >
       <Box
@@ -83,18 +97,29 @@ export default function SidebarNav({
         }}
       >
         {!collapsed && (
-          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: sidebarText }}>
             GreenSupply Co
           </Typography>
         )}
-        <Tooltip title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
-          <IconButton
-            onClick={isDesktop ? onCollapseToggle : onMobileToggle}
-            sx={{ color: "#f5f5f5" }}
-          >
-            <MenuIcon />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Tooltip title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
+            <IconButton
+              onClick={toggleMode}
+              sx={{ color: sidebarText }}
+              size="small"
+            >
+              {isDark ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
+            <IconButton
+              onClick={isDesktop ? onCollapseToggle : onMobileToggle}
+              sx={{ color: sidebarText }}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
       <Divider sx={{ borderColor: sidebarBorder }} />
       <List sx={{ px: 1.5, py: 2 }}>
@@ -109,10 +134,10 @@ export default function SidebarNav({
               sx={{
                 mb: 1,
                 borderRadius: 2,
-                color: isActive ? "#dff1e0" : "#c7c7c7",
+                color: isActive ? activeText : sidebarTextSecondary,
                 bgcolor: isActive ? activeBg : "transparent",
                 "&:hover": {
-                  bgcolor: isActive ? activeBg : "rgba(255, 255, 255, 0.08)",
+                  bgcolor: isActive ? activeBg : theme.palette.action.hover,
                 },
                 justifyContent: collapsed ? "center" : "flex-start",
                 px: collapsed ? 1.5 : 2,
@@ -121,7 +146,7 @@ export default function SidebarNav({
               <ListItemIcon
                 sx={{
                   minWidth: collapsed ? "auto" : 36,
-                  color: isActive ? "#8bd69b" : "#9a9a9a",
+                  color: isActive ? activeIconColor : iconColor,
                   justifyContent: "center",
                 }}
               >
@@ -138,16 +163,16 @@ export default function SidebarNav({
         sx={{ px: 2, py: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}
       >
         <Avatar
-          sx={{ width: 32, height: 32, bgcolor: "#2e7d32", fontSize: 14 }}
+          sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main, fontSize: 14 }}
         >
           IM
         </Avatar>
         {!collapsed && (
           <Box>
-            <Typography variant="body2" sx={{ color: "#f5f5f5" }}>
+            <Typography variant="body2" sx={{ color: sidebarText }}>
               Inventory Admin
             </Typography>
-            <Typography variant="caption" sx={{ color: "#a6a6a6" }}>
+            <Typography variant="caption" sx={{ color: sidebarTextSecondary }}>
               Ops Team
             </Typography>
           </Box>

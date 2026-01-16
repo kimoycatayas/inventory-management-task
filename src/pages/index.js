@@ -27,6 +27,7 @@ import {
   MenuItem,
   FormControl,
   LinearProgress,
+  useTheme,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
@@ -46,6 +47,8 @@ import WarningIcon from '@mui/icons-material/Warning';
 const LOW_STOCK_THRESHOLD = 10;
 
 export default function Home() {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const { products, warehouses, stock, loading, error, lastUpdated, refresh } = useDashboardData();
   const [alerts, setAlerts] = useState([]);
   const [alertsLoading, setAlertsLoading] = useState(false);
@@ -56,6 +59,13 @@ export default function Home() {
   const [sortDirection, setSortDirection] = useState('asc');
   const [timeframe, setTimeframe] = useState('month');
   const [selectedWarehouse, setSelectedWarehouse] = useState('all');
+
+  // Theme-aware chart colors
+  const chartGridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : '#e4e1d8';
+  const chartTickColor = isDark ? '#b0b0b0' : '#6b6b6b';
+  const chartTooltipBg = isDark ? '#2a2a2a' : '#ffffff';
+  const chartTooltipBorder = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0,0,0,0.08)';
+  const chartTooltipShadow = isDark ? '0 6px 16px rgba(0, 0, 0, 0.4)' : '0 6px 16px rgba(0,0,0,0.08)';
 
   // Fetch alerts
   useEffect(() => {
@@ -429,24 +439,26 @@ export default function Home() {
                   <AreaChart data={chartData.stockByWarehouse} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="stockGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#2e7d32" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#2e7d32" stopOpacity={0.03} />
+                        <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.25} />
+                        <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0.03} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid stroke="#e4e1d8" vertical={false} />
-                    <XAxis dataKey="code" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b6b6b' }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b6b6b' }} />
+                    <CartesianGrid stroke={chartGridColor} vertical={false} />
+                    <XAxis dataKey="code" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartTickColor }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartTickColor }} />
                     <RechartsTooltip
                       contentStyle={{
                         borderRadius: 10,
-                        border: '1px solid rgba(0,0,0,0.08)',
-                        boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+                        border: `1px solid ${chartTooltipBorder}`,
+                        boxShadow: chartTooltipShadow,
+                        backgroundColor: chartTooltipBg,
+                        color: theme.palette.text.primary,
                       }}
                     />
                     <Area
                       type="monotone"
                       dataKey="quantity"
-                      stroke="#2e7d32"
+                      stroke={theme.palette.primary.main}
                       strokeWidth={2}
                       fill="url(#stockGradient)"
                       dot={false}
@@ -472,16 +484,16 @@ export default function Home() {
                   <AreaChart data={chartData.valueByWarehouse} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#60ad5e" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#60ad5e" stopOpacity={0.04} />
+                        <stop offset="5%" stopColor={theme.palette.primary.light} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={theme.palette.primary.light} stopOpacity={0.04} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid stroke="#e4e1d8" vertical={false} />
-                    <XAxis dataKey="code" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b6b6b' }} />
+                    <CartesianGrid stroke={chartGridColor} vertical={false} />
+                    <XAxis dataKey="code" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartTickColor }} />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: '#6b6b6b' }}
+                      tick={{ fontSize: 12, fill: chartTickColor }}
                       tickFormatter={(value) => `$${Math.round(value / 1000)}k`}
                     />
                     <RechartsTooltip
@@ -490,14 +502,16 @@ export default function Home() {
                       }
                       contentStyle={{
                         borderRadius: 10,
-                        border: '1px solid rgba(0,0,0,0.08)',
-                        boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+                        border: `1px solid ${chartTooltipBorder}`,
+                        boxShadow: chartTooltipShadow,
+                        backgroundColor: chartTooltipBg,
+                        color: theme.palette.text.primary,
                       }}
                     />
                     <Area
                       type="monotone"
                       dataKey="value"
-                      stroke="#60ad5e"
+                      stroke={theme.palette.primary.light}
                       strokeWidth={2}
                       fill="url(#valueGradient)"
                       dot={false}
@@ -584,7 +598,7 @@ export default function Home() {
                         .filter((a) => a.status === 'active' && a.stockStatus === 'critical')
                         .slice(0, 5)
                         .map((alert) => (
-                          <TableRow key={alert.id} sx={{ bgcolor: 'rgba(244, 67, 54, 0.08)' }}>
+                          <TableRow key={alert.id} sx={{ bgcolor: isDark ? 'rgba(244, 67, 54, 0.16)' : 'rgba(244, 67, 54, 0.08)' }}>
                             <TableCell>
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                 {alert.productName}
@@ -655,7 +669,7 @@ export default function Home() {
                       sx={{
                         height: 6,
                         borderRadius: 10,
-                        bgcolor: 'rgba(46, 125, 50, 0.1)',
+                        bgcolor: isDark ? 'rgba(46, 125, 50, 0.2)' : 'rgba(46, 125, 50, 0.1)',
                         '& .MuiLinearProgress-bar': {
                           backgroundColor: 'primary.main',
                           borderRadius: 10,
@@ -761,12 +775,12 @@ export default function Home() {
                       {paginatedOverview.map((item) => (
                         <TableRow
                           key={item.id}
-                          sx={{
+                            sx={{
                             backgroundColor:
                               item.status === 'Out'
-                                ? 'rgba(244, 67, 54, 0.08)'
+                                ? isDark ? 'rgba(244, 67, 54, 0.16)' : 'rgba(244, 67, 54, 0.08)'
                                 : item.status === 'Low'
-                                ? 'rgba(255, 152, 0, 0.12)'
+                                ? isDark ? 'rgba(255, 152, 0, 0.2)' : 'rgba(255, 152, 0, 0.12)'
                                 : 'inherit',
                           }}
                         >

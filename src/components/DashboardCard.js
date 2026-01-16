@@ -1,12 +1,17 @@
-import { Box, Paper, Typography } from '@mui/material';
+import { Box, Paper, Typography, useTheme } from '@mui/material';
 
 export default function DashboardCard({ title, subtitle, action, children, sx }) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
   return (
     <Paper
       sx={{
         p: 3,
         borderRadius: 2,
-        boxShadow: '0 10px 24px rgba(18, 18, 18, 0.06)',
+        boxShadow: isDark
+          ? '0 10px 24px rgba(0, 0, 0, 0.4)'
+          : '0 10px 24px rgba(18, 18, 18, 0.06)',
         ...sx,
       }}
     >
