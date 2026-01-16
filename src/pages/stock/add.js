@@ -8,11 +8,9 @@ import {
   Button,
   Box,
   Paper,
-  AppBar,
-  Toolbar,
   MenuItem,
+  Grid,
 } from "@mui/material";
-import InventoryIcon from "@mui/icons-material/Inventory";
 
 export default function AddStock() {
   const [stock, setStock] = useState({
@@ -58,8 +56,13 @@ export default function AddStock() {
   return (
     <>
       <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
+        <Paper elevation={3} sx={{ p: { xs: 3, sm: 4 } }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{ fontSize: { xs: 22, sm: 28, md: 34 } }}
+          >
             Add Stock Record
           </Typography>
           <Box
@@ -68,50 +71,62 @@ export default function AddStock() {
             noValidate
             sx={{ mt: 2 }}
           >
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              select
-              label="Product"
-              name="productId"
-              value={stock.productId}
-              onChange={handleChange}
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  select
+                  label="Product"
+                  name="productId"
+                  value={stock.productId}
+                  onChange={handleChange}
+                >
+                  {products.map((product) => (
+                    <MenuItem key={product.id} value={product.id}>
+                      {product.name} ({product.sku})
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  select
+                  label="Warehouse"
+                  name="warehouseId"
+                  value={stock.warehouseId}
+                  onChange={handleChange}
+                >
+                  {warehouses.map((warehouse) => (
+                    <MenuItem key={warehouse.id} value={warehouse.id}>
+                      {warehouse.name} ({warehouse.code})
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Quantity"
+                  name="quantity"
+                  type="number"
+                  inputProps={{ min: "0", inputMode: "numeric" }}
+                  value={stock.quantity}
+                  onChange={handleChange}
+                />
+              </Grid>
+            </Grid>
+            <Box
+              sx={{
+                mt: 3,
+                display: "flex",
+                gap: 2,
+                flexDirection: { xs: "column", sm: "row" },
+              }}
             >
-              {products.map((product) => (
-                <MenuItem key={product.id} value={product.id}>
-                  {product.name} ({product.sku})
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              select
-              label="Warehouse"
-              name="warehouseId"
-              value={stock.warehouseId}
-              onChange={handleChange}
-            >
-              {warehouses.map((warehouse) => (
-                <MenuItem key={warehouse.id} value={warehouse.id}>
-                  {warehouse.name} ({warehouse.code})
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Quantity"
-              name="quantity"
-              type="number"
-              inputProps={{ min: "0" }}
-              value={stock.quantity}
-              onChange={handleChange}
-            />
-            <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
               <Button
                 type="submit"
                 fullWidth

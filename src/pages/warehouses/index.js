@@ -17,24 +17,26 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  AppBar,
-  Toolbar,
   Box,
   Menu,
   MenuItem,
   Snackbar,
   Alert,
   CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import InventoryIcon from "@mui/icons-material/Inventory";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { exportToCsv } from "@/lib/exportCsv";
 import { exportToPdf } from "@/lib/exportPdf";
 
 export default function Warehouses() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [warehouses, setWarehouses] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
@@ -196,29 +198,55 @@ export default function Warehouses() {
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: { xs: "stretch", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
             mb: 3,
+            gap: 2,
           }}
         >
-          <Typography variant="h4" component="h1">
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ fontSize: { xs: 22, sm: 28, md: 34 } }}
+          >
             Warehouses
           </Typography>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Button
-              variant="outlined"
-              startIcon={
-                exporting ? (
-                  <CircularProgress size={16} />
-                ) : (
-                  <FileDownloadIcon />
-                )
-              }
-              endIcon={<ArrowDropDownIcon />}
-              onClick={handleExportMenuOpen}
-              disabled={exporting || warehouses.length === 0}
-            >
-              Export
-            </Button>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "stretch", sm: "center" },
+              width: { xs: "100%", sm: "auto" },
+            }}
+          >
+            {isMobile ? (
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <IconButton
+                  onClick={handleExportMenuOpen}
+                  disabled={exporting || warehouses.length === 0}
+                  aria-label="Open export options"
+                >
+                  {exporting ? <CircularProgress size={20} /> : <MoreVertIcon />}
+                </IconButton>
+              </Box>
+            ) : (
+              <Button
+                variant="outlined"
+                startIcon={
+                  exporting ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <FileDownloadIcon />
+                  )
+                }
+                endIcon={<ArrowDropDownIcon />}
+                onClick={handleExportMenuOpen}
+                disabled={exporting || warehouses.length === 0}
+              >
+                Export
+              </Button>
+            )}
             <Menu
               anchorEl={exportMenuAnchor}
               open={Boolean(exportMenuAnchor)}
@@ -242,67 +270,109 @@ export default function Warehouses() {
               color="primary"
               component={Link}
               href="/warehouses/add"
+              fullWidth={isMobile}
             >
               Add Warehouse
             </Button>
           </Box>
         </Box>
 
-        <TableContainer component={Paper}>
-          <Table aria-label="Warehouses table">
-            <TableHead>
-              <TableRow>
-                <TableCell component="th" scope="col">
-                  <strong>Code</strong>
-                </TableCell>
-                <TableCell component="th" scope="col">
-                  <strong>Name</strong>
-                </TableCell>
-                <TableCell component="th" scope="col">
-                  <strong>Location</strong>
-                </TableCell>
-                <TableCell component="th" scope="col">
-                  <strong>Actions</strong>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {warehouses.map((warehouse) => (
-                <TableRow key={warehouse.id}>
-                  <TableCell>{warehouse.code}</TableCell>
-                  <TableCell>{warehouse.name}</TableCell>
-                  <TableCell>{warehouse.location}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      color="primary"
-                      component={Link}
-                      href={`/warehouses/edit/${warehouse.id}`}
-                      size="small"
-                      aria-label={`Edit warehouse ${warehouse.name}`}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleClickOpen(warehouse.id)}
-                      size="small"
-                      aria-label={`Delete warehouse ${warehouse.name}`}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {warehouses.length === 0 && (
+        {isMobile ? (
+          <Box sx={{ display: "grid", gap: 2 }}>
+            {warehouses.map((warehouse) => (
+              <Paper key={warehouse.id} sx={{ p: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                  {warehouse.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {warehouse.code}
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  {warehouse.location}
+                </Typography>
+                <Box sx={{ mt: 2, display: "grid", gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    component={Link}
+                    href={`/warehouses/edit/${warehouse.id}`}
+                    fullWidth
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="text"
+                    color="error"
+                    onClick={() => handleClickOpen(warehouse.id)}
+                    fullWidth
+                  >
+                    Delete
+                  </Button>
+                </Box>
+              </Paper>
+            ))}
+            {warehouses.length === 0 && (
+              <Paper sx={{ p: 3, textAlign: "center" }}>
+                <Typography variant="body2">No warehouses available.</Typography>
+              </Paper>
+            )}
+          </Box>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table aria-label="Warehouses table">
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    No warehouses available.
+                  <TableCell component="th" scope="col">
+                    <strong>Code</strong>
+                  </TableCell>
+                  <TableCell component="th" scope="col">
+                    <strong>Name</strong>
+                  </TableCell>
+                  <TableCell component="th" scope="col">
+                    <strong>Location</strong>
+                  </TableCell>
+                  <TableCell component="th" scope="col">
+                    <strong>Actions</strong>
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {warehouses.map((warehouse) => (
+                  <TableRow key={warehouse.id}>
+                    <TableCell>{warehouse.code}</TableCell>
+                    <TableCell>{warehouse.name}</TableCell>
+                    <TableCell>{warehouse.location}</TableCell>
+                    <TableCell>
+                      <IconButton
+                        color="primary"
+                        component={Link}
+                        href={`/warehouses/edit/${warehouse.id}`}
+                        size="small"
+                        aria-label={`Edit warehouse ${warehouse.name}`}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleClickOpen(warehouse.id)}
+                        size="small"
+                        aria-label={`Delete warehouse ${warehouse.name}`}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {warehouses.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center">
+                      No warehouses available.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
 
         <Dialog
           open={open}

@@ -17,24 +17,26 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  AppBar,
-  Toolbar,
   Box,
   Menu,
   MenuItem,
   Snackbar,
   Alert,
   CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import InventoryIcon from "@mui/icons-material/Inventory";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { exportToCsv } from "@/lib/exportCsv";
 import { exportToPdf } from "@/lib/exportPdf";
 
 export default function Products() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [products, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
@@ -200,29 +202,55 @@ export default function Products() {
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: { xs: "stretch", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
             mb: 3,
+            gap: 2,
           }}
         >
-          <Typography variant="h4" component="h1">
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ fontSize: { xs: 22, sm: 28, md: 34 } }}
+          >
             Products
           </Typography>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Button
-              variant="outlined"
-              startIcon={
-                exporting ? (
-                  <CircularProgress size={16} />
-                ) : (
-                  <FileDownloadIcon />
-                )
-              }
-              endIcon={<ArrowDropDownIcon />}
-              onClick={handleExportMenuOpen}
-              disabled={exporting || products.length === 0}
-            >
-              Export
-            </Button>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "stretch", sm: "center" },
+              width: { xs: "100%", sm: "auto" },
+            }}
+          >
+            {isMobile ? (
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <IconButton
+                  onClick={handleExportMenuOpen}
+                  disabled={exporting || products.length === 0}
+                  aria-label="Open export options"
+                >
+                  {exporting ? <CircularProgress size={20} /> : <MoreVertIcon />}
+                </IconButton>
+              </Box>
+            ) : (
+              <Button
+                variant="outlined"
+                startIcon={
+                  exporting ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <FileDownloadIcon />
+                  )
+                }
+                endIcon={<ArrowDropDownIcon />}
+                onClick={handleExportMenuOpen}
+                disabled={exporting || products.length === 0}
+              >
+                Export
+              </Button>
+            )}
             <Menu
               anchorEl={exportMenuAnchor}
               open={Boolean(exportMenuAnchor)}
@@ -246,77 +274,142 @@ export default function Products() {
               color="primary"
               component={Link}
               href="/products/add"
+              fullWidth={isMobile}
             >
               Add Product
             </Button>
           </Box>
         </Box>
 
-        <TableContainer component={Paper}>
-          <Table aria-label="Products table">
-            <TableHead>
-              <TableRow>
-                <TableCell component="th" scope="col">
-                  <strong>SKU</strong>
-                </TableCell>
-                <TableCell component="th" scope="col">
-                  <strong>Name</strong>
-                </TableCell>
-                <TableCell component="th" scope="col">
-                  <strong>Category</strong>
-                </TableCell>
-                <TableCell component="th" scope="col" align="right">
-                  <strong>Unit Cost</strong>
-                </TableCell>
-                <TableCell component="th" scope="col" align="right">
-                  <strong>Reorder Point</strong>
-                </TableCell>
-                <TableCell component="th" scope="col">
-                  <strong>Actions</strong>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {products.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>{product.sku}</TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell align="right">
-                    {product.unitCost != null ? `$${product.unitCost.toFixed(2)}` : 'N/A'}
-                  </TableCell>
-                  <TableCell align="right">{product.reorderPoint}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      color="primary"
-                      component={Link}
-                      href={`/products/edit/${product.id}`}
-                      size="small"
-                      aria-label={`Edit product ${product.name}`}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleClickOpen(product.id)}
-                      size="small"
-                      aria-label={`Delete product ${product.name}`}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {products.length === 0 && (
+        {isMobile ? (
+          <Box sx={{ display: "grid", gap: 2 }}>
+            {products.map((product) => (
+              <Paper key={product.id} sx={{ p: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                  {product.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {product.sku} • {product.category}
+                </Typography>
+                <Box sx={{ mt: 1.5, display: "grid", gap: 1 }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography variant="body2" color="text.secondary">
+                      Unit cost
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {product.unitCost != null
+                        ? `$${product.unitCost.toFixed(2)}`
+                        : "N/A"}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography variant="body2" color="text.secondary">
+                      Reorder point
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {product.reorderPoint}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ mt: 2, display: "grid", gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    component={Link}
+                    href={`/products/edit/${product.id}`}
+                    fullWidth
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="text"
+                    color="error"
+                    onClick={() => handleClickOpen(product.id)}
+                    fullWidth
+                  >
+                    Delete
+                  </Button>
+                </Box>
+              </Paper>
+            ))}
+            {products.length === 0 && (
+              <Paper sx={{ p: 3, textAlign: "center" }}>
+                <Typography variant="body2">No products available.</Typography>
+              </Paper>
+            )}
+          </Box>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table aria-label="Products table">
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    No products available.
+                  <TableCell component="th" scope="col">
+                    <strong>SKU</strong>
+                  </TableCell>
+                  <TableCell component="th" scope="col">
+                    <strong>Name</strong>
+                  </TableCell>
+                  <TableCell component="th" scope="col">
+                    <strong>Category</strong>
+                  </TableCell>
+                  <TableCell component="th" scope="col" align="right">
+                    <strong>Unit Cost</strong>
+                  </TableCell>
+                  <TableCell component="th" scope="col" align="right">
+                    <strong>Reorder Point</strong>
+                  </TableCell>
+                  <TableCell component="th" scope="col">
+                    <strong>Actions</strong>
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {products.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>{product.sku}</TableCell>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell align="right">
+                      {product.unitCost != null
+                        ? `$${product.unitCost.toFixed(2)}`
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell align="right">{product.reorderPoint}</TableCell>
+                    <TableCell>
+                      <IconButton
+                        color="primary"
+                        component={Link}
+                        href={`/products/edit/${product.id}`}
+                        size="small"
+                        aria-label={`Edit product ${product.name}`}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleClickOpen(product.id)}
+                        size="small"
+                        aria-label={`Delete product ${product.name}`}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {products.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">
+                      No products available.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
 
         <Dialog 
           open={open} 

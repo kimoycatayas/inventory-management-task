@@ -16,5 +16,59 @@
       "reason": "testing 1 stock transfer",
       "referenceNo": null
     }
+  },
+  {
+    "id": "8b47d2d0-66d0-4bd5-b6e1-ab34f7ff7489",
+    "createdAt": "2026-01-16T10:06:45.297Z",
+    "status": "completed",
+    "productId": 1,
+    "fromWarehouseId": 1,
+    "toWarehouseId": 2,
+    "quantity": 100,
+    "note": null,
+    "createdBy": "system",
+    "productName": "Bamboo Spork Set",
+    "fromWarehouseName": "Main Distribution Center",
+    "toWarehouseName": "West Coast Facility",
+    "meta": {
+      "reason": null,
+      "referenceNo": null
+    }
+  },
+  {
+    "id": "7eb8757f-dc93-459f-87b9-95ddcae6e646",
+    "createdAt": "2026-01-16T10:14:43.306Z",
+    "status": "completed",
+    "productId": 10,
+    "fromWarehouseId": 1,
+    "toWarehouseId": 2,
+    "quantity": 50,
+    "note": null,
+    "createdBy": "system",
+    "productName": "Excelsa Beans",
+    "fromWarehouseName": "Damilag Warehouse",
+    "toWarehouseName": "Malaybalay Warehouse",
+    "meta": {
+      "reason": null,
+      "referenceNo": null
+    }
+  },
+  {
+    "id": "3de47746-f93b-450e-afa6-d35aca86fc84",
+    "createdAt": "2026-01-16T11:23:31.664Z",
+    "status": "completed",
+    "productId": 7,
+    "fromWarehouseId": 3,
+    "toWarehouseId": 1,
+    "quantity": 100,
+    "note": null,
+    "createdBy": "system",
+    "productName": "Arabica Beans",
+    "fromWarehouseName": "Cagayan de Oro Warehouse",
+    "toWarehouseName": "Damilag Warehouse",
+    "meta": {
+      "reason": null,
+      "referenceNo": null
+    }
   }
 ]

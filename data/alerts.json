@@ -1,155 +1,75 @@
 [
   {
-    "id": "5a15528b-5c5c-4646-b688-0e5558eb578c",
-    "productId": 2,
-    "productName": "Compostable Food Container 32oz",
-    "productSku": "ECO-PKG-002",
-    "productCategory": "Packaging",
-    "reorderPoint": 500,
-    "currentStock": 2000,
-    "stockStatus": "overstocked",
-    "recommendedReorderQuantity": 0,
-    "warehouses": [
-      {
-        "warehouseId": 1,
-        "warehouseName": "Main Distribution Center",
-        "warehouseCode": "NDC-01",
-        "quantity": 1200
-      },
-      {
-        "warehouseId": 3,
-        "warehouseName": "Southern Hub",
-        "warehouseCode": "STH-03",
-        "quantity": 800
-      }
-    ],
-    "status": "active",
-    "createdAt": "2026-01-16T06:32:06.085Z",
-    "updatedAt": "2026-01-16T06:32:06.085Z",
-    "acknowledgedAt": null,
-    "resolvedAt": null,
-    "notes": null
-  },
-  {
-    "id": "62c3e91a-8871-4882-87bd-48f26bc25543",
-    "productId": 3,
-    "productName": "Wooden Chopsticks",
-    "productSku": "ECO-UTN-003",
-    "productCategory": "Utensils",
-    "reorderPoint": 1000,
-    "currentStock": 4300,
-    "stockStatus": "overstocked",
-    "recommendedReorderQuantity": 0,
-    "warehouses": [
-      {
-        "warehouseId": 1,
-        "warehouseName": "Main Distribution Center",
-        "warehouseCode": "NDC-01",
-        "quantity": 2500
-      },
-      {
-        "warehouseId": 2,
-        "warehouseName": "West Coast Facility",
-        "warehouseCode": "WCF-02",
-        "quantity": 1800
-      }
-    ],
-    "status": "active",
-    "createdAt": "2026-01-16T06:32:06.085Z",
-    "updatedAt": "2026-01-16T06:32:06.085Z",
-    "acknowledgedAt": null,
-    "resolvedAt": null,
-    "notes": null
-  },
-  {
-    "id": "74a86085-acec-4031-8ce9-7844dddfd695",
-    "productId": 4,
-    "productName": "Recyclable Paper Bowl",
-    "productSku": "ECO-PKG-004",
-    "productCategory": "Packaging",
-    "reorderPoint": 750,
-    "currentStock": 1550,
-    "stockStatus": "overstocked",
-    "recommendedReorderQuantity": 0,
-    "warehouses": [
-      {
-        "warehouseId": 1,
-        "warehouseName": "Main Distribution Center",
-        "warehouseCode": "NDC-01",
-        "quantity": 950
-      },
-      {
-        "warehouseId": 2,
-        "warehouseName": "West Coast Facility",
-        "warehouseCode": "WCF-02",
-        "quantity": 600
-      }
-    ],
-    "status": "active",
-    "createdAt": "2026-01-16T06:32:06.085Z",
-    "updatedAt": "2026-01-16T06:32:06.085Z",
-    "acknowledgedAt": null,
-    "resolvedAt": null,
-    "notes": null
-  },
-  {
-    "id": "72fe1f49-177a-4705-8ea0-1731e42eb4ed",
-    "productId": 5,
-    "productName": "Biodegradable Coffee Cup 12oz",
-    "productSku": "ECO-CUP-005",
-    "productCategory": "Cups",
-    "reorderPoint": 600,
-    "currentStock": 1150,
-    "stockStatus": "overstocked",
-    "recommendedReorderQuantity": 0,
-    "warehouses": [
-      {
-        "warehouseId": 2,
-        "warehouseName": "West Coast Facility",
-        "warehouseCode": "WCF-02",
-        "quantity": 450
-      },
-      {
-        "warehouseId": 3,
-        "warehouseName": "Southern Hub",
-        "warehouseCode": "STH-03",
-        "quantity": 700
-      }
-    ],
-    "status": "active",
-    "createdAt": "2026-01-16T06:32:06.085Z",
-    "updatedAt": "2026-01-16T06:32:06.085Z",
-    "acknowledgedAt": null,
-    "resolvedAt": null,
-    "notes": null
-  },
-  {
-    "id": "1cd8f429-df49-4b55-b1e9-2ae7afaa3ab7",
-    "productId": 6,
-    "productName": "TEST-1234",
-    "productSku": "TEST_1234",
-    "productCategory": "TEST CATEGORY",
-    "reorderPoint": 100,
-    "currentStock": 11,
+    "id": "ec3c5365-b109-4908-a0d5-9b76d305664f",
+    "productId": 8,
+    "productName": "Robusta Beans",
+    "productSku": "RO-CF",
+    "productCategory": "COFFEE",
+    "reorderPoint": 400,
+    "currentStock": 100,
     "stockStatus": "critical",
-    "recommendedReorderQuantity": 139,
+    "recommendedReorderQuantity": 500,
     "warehouses": [
       {
-        "warehouseId": 3,
-        "warehouseName": "Southern Hub",
-        "warehouseCode": "STH-03",
-        "quantity": 10
-      },
-      {
-        "warehouseId": 1,
-        "warehouseName": "Main Distribution Center",
-        "warehouseCode": "NDC-01",
-        "quantity": 1
+        "warehouseId": 2,
+        "warehouseName": "Malaybalay Warehouse",
+        "warehouseCode": "MLY",
+        "quantity": 100
       }
     ],
     "status": "active",
-    "createdAt": "2026-01-16T06:32:06.086Z",
-    "updatedAt": "2026-01-16T06:32:06.086Z",
+    "createdAt": "2026-01-16T10:14:15.170Z",
+    "updatedAt": "2026-01-16T10:14:15.170Z",
+    "acknowledgedAt": null,
+    "resolvedAt": null,
+    "notes": null
+  },
+  {
+    "id": "ac0b7398-cf26-4f05-a5b6-cb56ca46c933",
+    "productId": 9,
+    "productName": "Liberica beans",
+    "productSku": "LB-CF",
+    "productCategory": "Liberica",
+    "reorderPoint": 300,
+    "currentStock": 100,
+    "stockStatus": "low",
+    "recommendedReorderQuantity": 350,
+    "warehouses": [
+      {
+        "warehouseId": 3,
+        "warehouseName": "Cagayan de Oro Warehouse",
+        "warehouseCode": "CGY",
+        "quantity": 100
+      }
+    ],
+    "status": "active",
+    "createdAt": "2026-01-16T10:14:18.946Z",
+    "updatedAt": "2026-01-16T10:14:18.946Z",
+    "acknowledgedAt": null,
+    "resolvedAt": null,
+    "notes": null
+  },
+  {
+    "id": "25cd91ca-ffb7-465d-b346-97d338db62f6",
+    "productId": 10,
+    "productName": "Excelsa Beans",
+    "productSku": "EX-CF",
+    "productCategory": "COFFEE",
+    "reorderPoint": 400,
+    "currentStock": 100,
+    "stockStatus": "critical",
+    "recommendedReorderQuantity": 500,
+    "warehouses": [
+      {
+        "warehouseId": 1,
+        "warehouseName": "Damilag Warehouse",
+        "warehouseCode": "DMG",
+        "quantity": 100
+      }
+    ],
+    "status": "active",
+    "createdAt": "2026-01-16T10:14:17.208Z",
+    "updatedAt": "2026-01-16T10:14:17.209Z",
     "acknowledgedAt": null,
     "resolvedAt": null,
     "notes": null

@@ -1,50 +1,34 @@
 [
   {
-    "id": 1,
-    "sku": "ECO-UTN-001",
-    "name": "Bamboo Spork Set",
-    "category": "Utensils",
-    "unitCost": 2.5,
-    "reorderPoint": 100
+    "sku": "AR-CF",
+    "name": "Arabica Beans",
+    "category": "COFFEE",
+    "unitCost": 100,
+    "reorderPoint": 500,
+    "id": 7
   },
   {
-    "id": 2,
-    "sku": "ECO-PKG-002",
-    "name": "Compostable Food Container 32oz",
-    "category": "Packaging",
-    "unitCost": 0.85,
-    "reorderPoint": 500
+    "sku": "RO-CF",
+    "name": "Robusta Beans",
+    "category": "COFFEE",
+    "unitCost": 200,
+    "reorderPoint": 400,
+    "id": 8
   },
   {
-    "id": 3,
-    "sku": "ECO-UTN-003",
-    "name": "Wooden Chopsticks",
-    "category": "Utensils",
-    "unitCost": 0.3,
-    "reorderPoint": 1000
+    "sku": "LB-CF",
+    "name": "Liberica beans",
+    "category": "Liberica",
+    "unitCost": 300,
+    "reorderPoint": 300,
+    "id": 9
   },
   {
-    "id": 4,
-    "sku": "ECO-PKG-004",
-    "name": "Recyclable Paper Bowl",
-    "category": "Packaging",
-    "unitCost": 0.45,
-    "reorderPoint": 750
-  },
-  {
-    "id": 5,
-    "sku": "ECO-CUP-005",
-    "name": "Biodegradable Coffee Cup 12oz",
-    "category": "Cups",
-    "unitCost": 0.6,
-    "reorderPoint": 600
-  },
-  {
-    "sku": "TEST_1234",
-    "name": "TEST-1234",
-    "category": "TEST CATEGORY",
-    "unitCost": 999,
-    "reorderPoint": 100,
-    "id": 6
+    "sku": "EX-CF",
+    "name": "Excelsa Beans",
+    "category": "COFFEE",
+    "unitCost": 400,
+    "reorderPoint": 400,
+    "id": 10
   }
 ]

@@ -1,6 +1,15 @@
 import { useState } from "react";
-import { Box, useMediaQuery } from "@mui/material";
+import {
+  AppBar,
+  Box,
+  Container,
+  IconButton,
+  Toolbar,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import MenuIcon from "@mui/icons-material/Menu";
 import SidebarNav from "@/components/SidebarNav";
 import KeyboardShortcutsHelp from "@/components/KeyboardShortcutsHelp";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -49,8 +58,32 @@ export default function AppLayout({ children }) {
         }}
         id="main-content"
       >
-        <Box sx={{ px: { xs: 2, md: 4 }, py: { xs: 3, md: 4 } }}>
-          <Box sx={{ maxWidth: 1240, mx: "auto" }}>{children}</Box>
+        {!isDesktop && (
+          <AppBar
+            position="sticky"
+            color="default"
+            elevation={0}
+            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+          >
+            <Toolbar sx={{ gap: 1 }}>
+              <IconButton
+                edge="start"
+                color="inherit"
+                onClick={handleMobileToggle}
+                aria-label="Open navigation menu"
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                Inventory Manager
+              </Typography>
+            </Toolbar>
+          </AppBar>
+        )}
+        <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 3, md: 4 } }}>
+          <Container maxWidth="lg" disableGutters>
+            {children}
+          </Container>
         </Box>
       </Box>
       

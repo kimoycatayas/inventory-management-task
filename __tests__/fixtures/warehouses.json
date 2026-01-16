@@ -1,21 +1,20 @@
 [
   {
-    "id": 1,
-    "name": "Main Distribution Center",
-    "location": "Newark, NJ",
-    "code": "NDC-01"
+    "name": "Damilag Warehouse",
+    "location": "Damilag Manolo Fortich Bukidnon",
+    "code": "DMG",
+    "id": 1
   },
   {
-    "id": 2,
-    "name": "West Coast Facility",
-    "location": "Los Angeles, CA",
-    "code": "WCF-02"
+    "name": "Malaybalay Warehouse",
+    "location": "Malaybalay Bukidnon",
+    "code": "MLY",
+    "id": 2
   },
   {
-    "id": 3,
-    "name": "Southern Hub",
-    "location": "Dallas, TX",
-    "code": "STH-03"
+    "name": "Cagayan de Oro Warehouse",
+    "location": "Cagayan de Oro City Mis Or",
+    "code": "CGY",
+    "id": 3
   }
 ]
-

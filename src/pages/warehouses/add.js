@@ -8,10 +8,8 @@ import {
   Button,
   Box,
   Paper,
-  AppBar,
-  Toolbar,
+  Grid,
 } from "@mui/material";
-import InventoryIcon from "@mui/icons-material/Inventory";
 
 export default function AddWarehouse() {
   const [warehouse, setWarehouse] = useState({
@@ -41,8 +39,13 @@ export default function AddWarehouse() {
   return (
     <>
       <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
+        <Paper elevation={3} sx={{ p: { xs: 3, sm: 4 } }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{ fontSize: { xs: 22, sm: 28, md: 34 } }}
+          >
             Add New Warehouse
           </Typography>
           <Box
@@ -51,34 +54,46 @@ export default function AddWarehouse() {
             noValidate
             sx={{ mt: 2 }}
           >
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Warehouse Code"
-              name="code"
-              value={warehouse.code}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Warehouse Name"
-              name="name"
-              value={warehouse.name}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Location"
-              name="location"
-              value={warehouse.location}
-              onChange={handleChange}
-            />
-            <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Warehouse Code"
+                  name="code"
+                  value={warehouse.code}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Warehouse Name"
+                  name="name"
+                  value={warehouse.name}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Location"
+                  name="location"
+                  value={warehouse.location}
+                  onChange={handleChange}
+                />
+              </Grid>
+            </Grid>
+            <Box
+              sx={{
+                mt: 3,
+                display: "flex",
+                gap: 2,
+                flexDirection: { xs: "column", sm: "row" },
+              }}
+            >
               <Button
                 type="submit"
                 fullWidth

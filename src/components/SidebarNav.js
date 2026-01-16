@@ -132,6 +132,7 @@ export default function SidebarNav({
               href={item.href}
               selected={isActive}
               aria-current={isActive ? "page" : undefined}
+              onClick={!isDesktop ? onMobileToggle : undefined}
               sx={{
                 mb: 1,
                 borderRadius: 2,

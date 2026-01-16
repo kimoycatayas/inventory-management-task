@@ -24,17 +24,22 @@ import {
   Divider,
   CircularProgress,
   Menu,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AppLayout from "@/components/AppLayout";
 import DashboardCard from "@/components/DashboardCard";
 import { exportToCsv } from "@/lib/exportCsv";
 import { exportToPdf } from "@/lib/exportPdf";
 
 export default function Transfers() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   // Data state
   const [products, setProducts] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
@@ -357,7 +362,12 @@ export default function Transfers() {
           }}
         >
           <Box>
-            <Typography variant="h4" component="h1" gutterBottom>
+            <Typography
+              variant="h4"
+              component="h1"
+              gutterBottom
+              sx={{ fontSize: { xs: 22, sm: 28, md: 34 } }}
+            >
               Stock Transfers
             </Typography>
             <Typography variant="body1" color="text.secondary">
@@ -487,7 +497,7 @@ export default function Transfers() {
                         setQuantity(val);
                       }
                     }}
-                    inputProps={{ min: 1, step: 1 }}
+                    inputProps={{ min: 1, step: 1, inputMode: "numeric" }}
                     error={
                       quantity !== "" &&
                       (parseInt(quantity) <= 0 ||
@@ -536,7 +546,12 @@ export default function Transfers() {
                 <Grid item xs={12}>
                   <Divider sx={{ my: 1 }} />
                   <Box
-                    sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: { xs: "stretch", sm: "flex-end" },
+                      flexDirection: { xs: "column", sm: "row" },
+                      gap: 2,
+                    }}
                   >
                     <Button
                       variant="outlined"
@@ -548,6 +563,7 @@ export default function Transfers() {
                         setNote("");
                       }}
                       disabled={submitting}
+                      fullWidth={isMobile}
                     >
                       Clear
                     </Button>
@@ -563,6 +579,7 @@ export default function Transfers() {
                           <SendIcon />
                         )
                       }
+                      fullWidth={isMobile}
                     >
                       {submitting ? "Processing..." : "Execute Transfer"}
                     </Button>
@@ -581,27 +598,50 @@ export default function Transfers() {
             <Box
               sx={{
                 display: "flex",
-                gap: 2,
+                gap: 1.5,
                 flexWrap: "wrap",
-                alignItems: "center",
+                alignItems: { xs: "stretch", sm: "center" },
+                flexDirection: { xs: "column", sm: "row" },
+                width: "100%",
               }}
             >
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={
-                  exporting ? (
-                    <CircularProgress size={16} />
-                  ) : (
-                    <FileDownloadIcon />
-                  )
-                }
-                endIcon={<ArrowDropDownIcon />}
-                onClick={handleExportMenuOpen}
-                disabled={exporting || filteredTransfers.length === 0}
-              >
-                Export
-              </Button>
+              {isMobile ? (
+                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={
+                      exporting ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        <MoreVertIcon />
+                      )
+                    }
+                    onClick={handleExportMenuOpen}
+                    disabled={exporting || filteredTransfers.length === 0}
+                    fullWidth
+                  >
+                    Export
+                  </Button>
+                </Box>
+              ) : (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={
+                    exporting ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <FileDownloadIcon />
+                    )
+                  }
+                  endIcon={<ArrowDropDownIcon />}
+                  onClick={handleExportMenuOpen}
+                  disabled={exporting || filteredTransfers.length === 0}
+                >
+                  Export
+                </Button>
+              )}
               <Menu
                 anchorEl={exportMenuAnchor}
                 open={Boolean(exportMenuAnchor)}
@@ -620,7 +660,7 @@ export default function Transfers() {
                   Export PDF
                 </MenuItem>
               </Menu>
-              <FormControl size="small" sx={{ minWidth: 180 }}>
+              <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 180 } }}>
                 <InputLabel id="filter-warehouse-label">Filter by Warehouse</InputLabel>
                 <Select
                   value={filterWarehouseId}
@@ -639,7 +679,7 @@ export default function Transfers() {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl size="small" sx={{ minWidth: 180 }}>
+              <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 180 } }}>
                 <InputLabel id="filter-product-label">Filter by Product</InputLabel>
                 <Select
                   value={filterProductId}
@@ -678,91 +718,170 @@ export default function Transfers() {
             </Alert>
           ) : (
             <>
-              <TableContainer sx={{ mt: 2 }}>
-                <Table aria-label="Stock transfers history table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell component="th" scope="col">Date/Time</TableCell>
-                      <TableCell component="th" scope="col">Product</TableCell>
-                      <TableCell component="th" scope="col">Transfer</TableCell>
-                      <TableCell component="th" scope="col" align="right">Quantity</TableCell>
-                      <TableCell component="th" scope="col" align="center">Status</TableCell>
-                      <TableCell component="th" scope="col">Note</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {paginatedTransfers.map((transfer) => (
-                      <TableRow key={transfer.id} hover>
-                        <TableCell>
-                          {new Date(transfer.createdAt).toLocaleString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {transfer.productName}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            ID: {transfer.productId}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Typography variant="body2" color="text.secondary">
-                              {transfer.fromWarehouseName}
-                            </Typography>
-                            <SwapHorizIcon
-                              sx={{ fontSize: 18, color: "primary.main" }}
-                            />
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600 }}
-                            >
-                              {transfer.toWarehouseName}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {transfer.quantity.toLocaleString()}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Chip
-                            label={transfer.status}
-                            color={
-                              transfer.status === "completed"
-                                ? "success"
-                                : "error"
-                            }
-                            size="small"
-                            variant="outlined"
-                            aria-label={`Transfer status: ${transfer.status}`}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" color="text.secondary">
-                            {transfer.note || "-"}
-                          </Typography>
-                        </TableCell>
+              {isMobile ? (
+                <Box sx={{ mt: 2, display: "grid", gap: 2 }}>
+                  {paginatedTransfers.map((transfer) => (
+                    <Paper key={transfer.id} sx={{ p: 2 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                        {transfer.productName}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(transfer.createdAt).toLocaleString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </Typography>
+                      <Box
+                        sx={{
+                          mt: 1.5,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          {transfer.fromWarehouseName}
+                        </Typography>
+                        <SwapHorizIcon sx={{ fontSize: 18, color: "primary.main" }} />
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {transfer.toWarehouseName}
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          mt: 1.5,
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          Quantity
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {transfer.quantity.toLocaleString()}
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          mt: 1,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          Status
+                        </Typography>
+                        <Chip
+                          label={transfer.status}
+                          color={
+                            transfer.status === "completed" ? "success" : "error"
+                          }
+                          size="small"
+                          variant="outlined"
+                          aria-label={`Transfer status: ${transfer.status}`}
+                        />
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 1 }}
+                      >
+                        {transfer.note || "No note provided."}
+                      </Typography>
+                    </Paper>
+                  ))}
+                </Box>
+              ) : (
+                <TableContainer sx={{ mt: 2 }}>
+                  <Table aria-label="Stock transfers history table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell component="th" scope="col">Date/Time</TableCell>
+                        <TableCell component="th" scope="col">Product</TableCell>
+                        <TableCell component="th" scope="col">Transfer</TableCell>
+                        <TableCell component="th" scope="col" align="right">Quantity</TableCell>
+                        <TableCell component="th" scope="col" align="center">Status</TableCell>
+                        <TableCell component="th" scope="col">Note</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedTransfers.map((transfer) => (
+                        <TableRow key={transfer.id} hover>
+                          <TableCell>
+                            {new Date(transfer.createdAt).toLocaleString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {transfer.productName}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              ID: {transfer.productId}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <Typography variant="body2" color="text.secondary">
+                                {transfer.fromWarehouseName}
+                              </Typography>
+                              <SwapHorizIcon
+                                sx={{ fontSize: 18, color: "primary.main" }}
+                              />
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600 }}
+                              >
+                                {transfer.toWarehouseName}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {transfer.quantity.toLocaleString()}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip
+                              label={transfer.status}
+                              color={
+                                transfer.status === "completed"
+                                  ? "success"
+                                  : "error"
+                              }
+                              size="small"
+                              variant="outlined"
+                              aria-label={`Transfer status: ${transfer.status}`}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {transfer.note || "-"}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
               <TablePagination
                 component="div"
                 count={filteredTransfers.length}

@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import {
   Typography,
   Box,
@@ -28,14 +28,16 @@ import {
   FormControl,
   LinearProgress,
   useTheme,
+  useMediaQuery,
   Menu,
   CircularProgress,
   Snackbar,
-} from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import SearchIcon from '@mui/icons-material/Search';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+} from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import SearchIcon from "@mui/icons-material/Search";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   AreaChart,
   Area,
@@ -44,51 +46,64 @@ import {
   CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
-} from 'recharts';
-import { useDashboardData } from '@/hooks/useDashboardData';
-import DashboardCard from '@/components/DashboardCard';
-import WarningIcon from '@mui/icons-material/Warning';
-import { exportToCsv } from '@/lib/exportCsv';
-import { exportToPdf } from '@/lib/exportPdf';
+} from "recharts";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import DashboardCard from "@/components/DashboardCard";
+import WarningIcon from "@mui/icons-material/Warning";
+import { exportToCsv } from "@/lib/exportCsv";
+import { exportToPdf } from "@/lib/exportPdf";
 
 const LOW_STOCK_THRESHOLD = 10;
 
 export default function Home() {
   const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
-  const { products, warehouses, stock, loading, error, lastUpdated, refresh } = useDashboardData();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isDark = theme.palette.mode === "dark";
+  const { products, warehouses, stock, loading, error, lastUpdated, refresh } =
+    useDashboardData();
   const [alerts, setAlerts] = useState([]);
   const [alertsLoading, setAlertsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [sortField, setSortField] = useState('name');
-  const [sortDirection, setSortDirection] = useState('asc');
-  const [timeframe, setTimeframe] = useState('month');
-  const [selectedWarehouse, setSelectedWarehouse] = useState('all');
+  const [sortField, setSortField] = useState("name");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [timeframe, setTimeframe] = useState("month");
+  const [selectedWarehouse, setSelectedWarehouse] = useState("all");
   const [exportMenuAnchor, setExportMenuAnchor] = useState(null);
   const [exporting, setExporting] = useState(false);
-  const [exportSnackbar, setExportSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [exportSnackbar, setExportSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   // Theme-aware chart colors
-  const chartGridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : '#e4e1d8';
-  const chartTickColor = isDark ? '#b0b0b0' : '#6b6b6b';
-  const chartTooltipBg = isDark ? '#2a2a2a' : '#ffffff';
-  const chartTooltipBorder = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0,0,0,0.08)';
-  const chartTooltipShadow = isDark ? '0 6px 16px rgba(0, 0, 0, 0.4)' : '0 6px 16px rgba(0,0,0,0.08)';
+  const chartGridColor = isDark ? "rgba(255, 255, 255, 0.1)" : "#e4e1d8";
+  const chartTickColor = isDark ? "#b0b0b0" : "#6b6b6b";
+  const chartTooltipBg = isDark ? "#2a2a2a" : "#ffffff";
+  const chartTooltipBorder = isDark
+    ? "rgba(255, 255, 255, 0.12)"
+    : "rgba(0,0,0,0.08)";
+  const chartTooltipShadow = isDark
+    ? "0 6px 16px rgba(0, 0, 0, 0.4)"
+    : "0 6px 16px rgba(0,0,0,0.08)";
+  const criticalAlerts = alerts
+    .filter((alert) => alert.status === "active" && alert.stockStatus === "critical")
+    .slice(0, 5);
 
   // Fetch alerts
   useEffect(() => {
     const fetchAlerts = async () => {
       setAlertsLoading(true);
       try {
-        const response = await fetch('/api/alerts');
+        const response = await fetch("/api/alerts");
         if (response.ok) {
           const data = await response.json();
           setAlerts(data);
         }
       } catch (err) {
-        console.error('Error fetching alerts:', err);
+        console.error("Error fetching alerts:", err);
       } finally {
         setAlertsLoading(false);
       }
@@ -104,7 +119,10 @@ export default function Home() {
     }, 0);
     const lowStockItems = products.filter((product) => {
       const productStock = stock.filter((s) => s.productId === product.id);
-      const totalQuantity = productStock.reduce((sum, s) => sum + s.quantity, 0);
+      const totalQuantity = productStock.reduce(
+        (sum, s) => sum + s.quantity,
+        0
+      );
       return totalQuantity > 0 && totalQuantity <= LOW_STOCK_THRESHOLD;
     }).length;
 
@@ -119,8 +137,13 @@ export default function Home() {
 
   const chartData = useMemo(() => {
     const stockByWarehouse = warehouses.map((warehouse) => {
-      const warehouseStock = stock.filter((s) => s.warehouseId === warehouse.id);
-      const totalQuantity = warehouseStock.reduce((sum, s) => sum + s.quantity, 0);
+      const warehouseStock = stock.filter(
+        (s) => s.warehouseId === warehouse.id
+      );
+      const totalQuantity = warehouseStock.reduce(
+        (sum, s) => sum + s.quantity,
+        0
+      );
       return {
         name: warehouse.name,
         code: warehouse.code,
@@ -129,7 +152,9 @@ export default function Home() {
     });
 
     const valueByWarehouse = warehouses.map((warehouse) => {
-      const warehouseStock = stock.filter((s) => s.warehouseId === warehouse.id);
+      const warehouseStock = stock.filter(
+        (s) => s.warehouseId === warehouse.id
+      );
       const totalValue = warehouseStock.reduce((sum, s) => {
         const product = products.find((p) => p.id === s.productId);
         return sum + (product ? product.unitCost * s.quantity : 0);
@@ -144,7 +169,10 @@ export default function Home() {
     const productTotals = products
       .map((product) => {
         const productStock = stock.filter((s) => s.productId === product.id);
-        const totalQuantity = productStock.reduce((sum, s) => sum + s.quantity, 0);
+        const totalQuantity = productStock.reduce(
+          (sum, s) => sum + s.quantity,
+          0
+        );
         return {
           name: product.name,
           sku: product.sku,
@@ -164,16 +192,19 @@ export default function Home() {
   const inventoryOverview = useMemo(() => {
     let overview = products.map((product) => {
       const productStock = stock.filter((s) => s.productId === product.id);
-      const totalQuantity = productStock.reduce((sum, s) => sum + s.quantity, 0);
+      const totalQuantity = productStock.reduce(
+        (sum, s) => sum + s.quantity,
+        0
+      );
       const totalValue = productStock.reduce((sum, s) => {
         return sum + product.unitCost * s.quantity;
       }, 0);
 
-      let status = 'OK';
+      let status = "OK";
       if (totalQuantity === 0) {
-        status = 'Out';
+        status = "Out";
       } else if (totalQuantity <= LOW_STOCK_THRESHOLD) {
-        status = 'Low';
+        status = "Low";
       }
 
       return {
@@ -198,12 +229,12 @@ export default function Home() {
       let aVal = a[sortField];
       let bVal = b[sortField];
 
-      if (typeof aVal === 'string') {
+      if (typeof aVal === "string") {
         aVal = aVal.toLowerCase();
         bVal = bVal.toLowerCase();
       }
 
-      if (sortDirection === 'asc') {
+      if (sortDirection === "asc") {
         return aVal > bVal ? 1 : -1;
       } else {
         return aVal < bVal ? 1 : -1;
@@ -214,15 +245,18 @@ export default function Home() {
   }, [products, stock, searchQuery, sortField, sortDirection]);
 
   const paginatedOverview = useMemo(() => {
-    return inventoryOverview.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    return inventoryOverview.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
   }, [inventoryOverview, page, rowsPerPage]);
 
   const handleSort = (field) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -236,7 +270,9 @@ export default function Home() {
   };
 
   const averageValuePerWarehouse = useMemo(() => {
-    return kpis.warehouseCount ? kpis.totalInventoryValue / kpis.warehouseCount : 0;
+    return kpis.warehouseCount
+      ? kpis.totalInventoryValue / kpis.warehouseCount
+      : 0;
   }, [kpis.totalInventoryValue, kpis.warehouseCount]);
 
   const averageUnitsPerWarehouse = useMemo(() => {
@@ -255,12 +291,12 @@ export default function Home() {
 
   const prepareExportData = () => {
     const columns = [
-      { id: 'name', label: 'Product Name' },
-      { id: 'sku', label: 'SKU' },
-      { id: 'category', label: 'Category' },
-      { id: 'totalQuantity', label: 'Total Stock' },
-      { id: 'totalValue', label: 'Total Value' },
-      { id: 'status', label: 'Status' },
+      { id: "name", label: "Product Name" },
+      { id: "sku", label: "SKU" },
+      { id: "category", label: "Category" },
+      { id: "totalQuantity", label: "Total Stock" },
+      { id: "totalValue", label: "Total Value" },
+      { id: "status", label: "Status" },
     ];
 
     const rows = inventoryOverview.map((item) => ({
@@ -279,8 +315,8 @@ export default function Home() {
     if (inventoryOverview.length === 0) {
       setExportSnackbar({
         open: true,
-        message: 'No data to export',
-        severity: 'warning',
+        message: "No data to export",
+        severity: "warning",
       });
       handleExportMenuClose();
       return;
@@ -292,21 +328,21 @@ export default function Home() {
     try {
       const { columns, rows } = prepareExportData();
       exportToCsv({
-        filename: 'inventory-overview',
+        filename: "inventory-overview",
         columns,
         rows,
       });
       setExportSnackbar({
         open: true,
-        message: 'CSV export completed successfully',
-        severity: 'success',
+        message: "CSV export completed successfully",
+        severity: "success",
       });
     } catch (error) {
-      console.error('Error exporting CSV:', error);
+      console.error("Error exporting CSV:", error);
       setExportSnackbar({
         open: true,
-        message: 'Failed to export CSV',
-        severity: 'error',
+        message: "Failed to export CSV",
+        severity: "error",
       });
     } finally {
       setExporting(false);
@@ -317,8 +353,8 @@ export default function Home() {
     if (inventoryOverview.length === 0) {
       setExportSnackbar({
         open: true,
-        message: 'No data to export',
-        severity: 'warning',
+        message: "No data to export",
+        severity: "warning",
       });
       handleExportMenuClose();
       return;
@@ -330,23 +366,25 @@ export default function Home() {
     try {
       const { columns, rows } = prepareExportData();
       await exportToPdf({
-        title: 'Inventory Overview Report',
-        subtitle: `Generated on ${new Date().toLocaleDateString()}${searchQuery ? ' (Filtered)' : ''}`,
+        title: "Inventory Overview Report",
+        subtitle: `Generated on ${new Date().toLocaleDateString()}${
+          searchQuery ? " (Filtered)" : ""
+        }`,
         columns,
         rows,
-        filename: 'inventory-overview',
+        filename: "inventory-overview",
       });
       setExportSnackbar({
         open: true,
-        message: 'PDF export completed successfully',
-        severity: 'success',
+        message: "PDF export completed successfully",
+        severity: "success",
       });
     } catch (error) {
-      console.error('Error exporting PDF:', error);
+      console.error("Error exporting PDF:", error);
       setExportSnackbar({
         open: true,
-        message: 'Failed to export PDF',
-        severity: 'error',
+        message: "Failed to export PDF",
+        severity: "error",
       });
     } finally {
       setExporting(false);
@@ -361,47 +399,62 @@ export default function Home() {
     <Box>
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          justifyContent: 'space-between',
-          alignItems: { xs: 'flex-start', md: 'center' },
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", md: "center" },
           gap: 2,
           mb: 3,
         }}
       >
         <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{ fontSize: { xs: 22, sm: 28, md: 34 } }}
+          >
             Hi, here&apos;s what&apos;s happening in your warehouses
           </Typography>
           <Typography variant="body1" color="text.secondary">
             Sustainable, low-waste operations powered by live inventory signals.
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-          <ToggleButtonGroup
-            value={timeframe}
-            exclusive
-            onChange={(event, nextValue) => nextValue && setTimeframe(nextValue)}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: 2,
+            flexDirection: { xs: "column", sm: "row" },
+            flexWrap: "wrap",
+            width: { xs: "100%", md: "auto" },
+          }}
+        >
+          <FormControl
             size="small"
+            sx={{ minWidth: { xs: "100%", sm: 180 } }}
           >
-            <ToggleButton value="today">Today</ToggleButton>
-            <ToggleButton value="week">This Week</ToggleButton>
-            <ToggleButton value="month">This Month</ToggleButton>
-          </ToggleButtonGroup>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
             <Select
               value={selectedWarehouse}
               onChange={(event) => setSelectedWarehouse(event.target.value)}
             >
               <MenuItem value="all">All Warehouses</MenuItem>
-              {warehouses.map((warehouse) => (
+              {/* {warehouses.map((warehouse) => (
                 <MenuItem key={warehouse.id} value={warehouse.id}>
                   {warehouse.name}
                 </MenuItem>
-              ))}
+              ))} */}
             </Select>
           </FormControl>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              justifyContent: { xs: "space-between", sm: "flex-start" },
+              width: { xs: "100%", sm: "auto" },
+            }}
+          >
             {lastUpdated && (
               <Typography variant="caption" color="text.secondary">
                 Updated {lastUpdated.toLocaleTimeString()}
@@ -433,31 +486,48 @@ export default function Home() {
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {loading ? (
           <>
-            <Box sx={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }} aria-live="polite" aria-atomic="true">
+            <Box
+              sx={{
+                position: "absolute",
+                left: "-10000px",
+                width: "1px",
+                height: "1px",
+                overflow: "hidden",
+              }}
+              aria-live="polite"
+              aria-atomic="true"
+            >
               Loading dashboard data...
             </Box>
             {Array.from({ length: 5 }).map((_, index) => (
-              <Grid key={index} item xs={12} sm={6} md={4}>
-                <Skeleton variant="rectangular" height={120} aria-hidden="true" />
+              <Grid key={index} item xs={12} sm={6} md={3}>
+                <Skeleton
+                  variant="rectangular"
+                  height={120}
+                  aria-hidden="true"
+                />
               </Grid>
             ))}
           </>
         ) : (
           <>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <DashboardCard>
                 <Typography variant="body2" color="text.secondary">
                   Total inventory value
                 </Typography>
                 <Typography variant="h5" sx={{ mt: 1, fontWeight: 700 }}>
-                  ${kpis.totalInventoryValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  $
+                  {kpis.totalInventoryValue.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                  })}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   Across all warehouses
                 </Typography>
               </DashboardCard>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <DashboardCard>
                 <Typography variant="body2" color="text.secondary">
                   Total units on hand
@@ -470,7 +540,7 @@ export default function Home() {
                 </Typography>
               </DashboardCard>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <DashboardCard>
                 <Typography variant="body2" color="text.secondary">
                   Active products
@@ -483,7 +553,7 @@ export default function Home() {
                 </Typography>
               </DashboardCard>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <DashboardCard>
                 <Typography variant="body2" color="text.secondary">
                   Warehouse locations
@@ -496,12 +566,15 @@ export default function Home() {
                 </Typography>
               </DashboardCard>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <DashboardCard>
                 <Typography variant="body2" color="text.secondary">
                   Low stock count
                 </Typography>
-                <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, color: 'warning.main' }}>
+                <Typography
+                  variant="h5"
+                  sx={{ mt: 1, fontWeight: 700, color: "warning.main" }}
+                >
                   {kpis.lowStockItems}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -509,40 +582,63 @@ export default function Home() {
                 </Typography>
               </DashboardCard>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <Box
                 component={Link}
                 href="/alerts"
                 sx={{
-                  textDecoration: 'none',
-                  display: 'block',
+                  textDecoration: "none",
+                  display: "block",
                 }}
               >
                 <DashboardCard
                   sx={{
-                    cursor: 'pointer',
-                    '&:hover': {
+                    cursor: "pointer",
+                    "&:hover": {
                       boxShadow: 4,
                     },
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
                     <Box>
                       <Typography variant="body2" color="text.secondary">
                         Active alerts
                       </Typography>
-                      <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, color: 'error.main' }}>
-                        {alertsLoading ? '...' : alerts.filter((a) => a.status === 'active').length}
+                      <Typography
+                        variant="h5"
+                        sx={{ mt: 1, fontWeight: 700, color: "error.main" }}
+                      >
+                        {alertsLoading
+                          ? "..."
+                          : alerts.filter((a) => a.status === "active").length}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {alertsLoading
-                          ? 'Loading...'
-                          : alerts.filter((a) => a.stockStatus === 'critical' && a.status !== 'resolved' && a.status !== 'dismissed').length > 0
-                          ? `${alerts.filter((a) => a.stockStatus === 'critical' && a.status !== 'resolved' && a.status !== 'dismissed').length} critical`
-                          : 'Requiring attention'}
+                          ? "Loading..."
+                          : alerts.filter(
+                              (a) =>
+                                a.stockStatus === "critical" &&
+                                a.status !== "resolved" &&
+                                a.status !== "dismissed"
+                            ).length > 0
+                          ? `${
+                              alerts.filter(
+                                (a) =>
+                                  a.stockStatus === "critical" &&
+                                  a.status !== "resolved" &&
+                                  a.status !== "dismissed"
+                              ).length
+                            } critical`
+                          : "Requiring attention"}
                       </Typography>
                     </Box>
-                    <WarningIcon sx={{ color: 'error.main', fontSize: 32 }} />
+                    <WarningIcon sx={{ color: "error.main", fontSize: 32 }} />
                   </Box>
                 </DashboardCard>
               </Box>
@@ -559,20 +655,46 @@ export default function Home() {
             <DashboardCard
               title="Stock movement"
               subtitle="Units stored per warehouse location"
-              sx={{ height: '100%' }}
+              sx={{ height: "100%" }}
             >
               <Box sx={{ mt: 2, height: 240 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData.stockByWarehouse} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <AreaChart
+                    data={chartData.stockByWarehouse}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                  >
                     <defs>
-                      <linearGradient id="stockGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.25} />
-                        <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0.03} />
+                      <linearGradient
+                        id="stockGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor={theme.palette.primary.main}
+                          stopOpacity={0.25}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor={theme.palette.primary.main}
+                          stopOpacity={0.03}
+                        />
                       </linearGradient>
                     </defs>
                     <CartesianGrid stroke={chartGridColor} vertical={false} />
-                    <XAxis dataKey="code" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartTickColor }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartTickColor }} />
+                    <XAxis
+                      dataKey="code"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: chartTickColor }}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: chartTickColor }}
+                    />
                     <RechartsTooltip
                       contentStyle={{
                         borderRadius: 10,
@@ -604,19 +726,41 @@ export default function Home() {
             <DashboardCard
               title="Inventory value trend"
               subtitle="Estimated value by warehouse"
-              sx={{ height: '100%' }}
+              sx={{ height: "100%" }}
             >
               <Box sx={{ mt: 2, height: 240 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData.valueByWarehouse} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <AreaChart
+                    data={chartData.valueByWarehouse}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                  >
                     <defs>
-                      <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={theme.palette.primary.light} stopOpacity={0.3} />
-                        <stop offset="95%" stopColor={theme.palette.primary.light} stopOpacity={0.04} />
+                      <linearGradient
+                        id="valueGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor={theme.palette.primary.light}
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor={theme.palette.primary.light}
+                          stopOpacity={0.04}
+                        />
                       </linearGradient>
                     </defs>
                     <CartesianGrid stroke={chartGridColor} vertical={false} />
-                    <XAxis dataKey="code" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartTickColor }} />
+                    <XAxis
+                      dataKey="code"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: chartTickColor }}
+                    />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
@@ -625,7 +769,10 @@ export default function Home() {
                     />
                     <RechartsTooltip
                       formatter={(value) =>
-                        `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        `$${value.toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}`
                       }
                       contentStyle={{
                         borderRadius: 10,
@@ -654,14 +801,21 @@ export default function Home() {
           {loading ? (
             <Skeleton variant="rectangular" height={320} />
           ) : (
-            <DashboardCard title="Warehouse stats" subtitle="Quick averages and alerts" sx={{ height: '100%' }}>
-              <Box sx={{ display: 'grid', gap: 2, mt: 1 }}>
+            <DashboardCard
+              title="Warehouse stats"
+              subtitle="Quick averages and alerts"
+              sx={{ height: "100%" }}
+            >
+              <Box sx={{ display: "grid", gap: 2, mt: 1 }}>
                 <Box>
                   <Typography variant="body2" color="text.secondary">
                     Average value per warehouse
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    ${averageValuePerWarehouse.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    $
+                    {averageValuePerWarehouse.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })}
                   </Typography>
                 </Box>
                 <Divider />
@@ -678,7 +832,10 @@ export default function Home() {
                   <Typography variant="body2" color="text.secondary">
                     Low stock count
                   </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: 'warning.main' }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 700, color: "warning.main" }}
+                  >
                     {kpis.lowStockItems}
                   </Typography>
                 </Box>
@@ -689,87 +846,222 @@ export default function Home() {
       </Grid>
 
       {/* Critical Alerts Section */}
-      {!alertsLoading && alerts.filter((a) => a.status === 'active' && a.stockStatus === 'critical').length > 0 && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12}>
-            <DashboardCard
-              title="Critical Stock Alerts"
-              subtitle="Products requiring immediate attention"
-              action={
-                <Button component={Link} href="/alerts" variant="outlined" size="small">
-                  View All Alerts
-                </Button>
-              }
-            >
-              <Box sx={{ mt: 2 }}>
-                <Alert severity="error" sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {alerts.filter((a) => a.status === 'active' && a.stockStatus === 'critical').length} critical
-                    alert{alerts.filter((a) => a.status === 'active' && a.stockStatus === 'critical').length !== 1 ? 's' : ''}{' '}
-                    requiring immediate action
-                  </Typography>
-                </Alert>
-                <TableContainer>
-                  <Table size="small" aria-label="Critical stock alerts table">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell component="th" scope="col">Product</TableCell>
-                        <TableCell component="th" scope="col" align="right">Current Stock</TableCell>
-                        <TableCell component="th" scope="col" align="right">Reorder Point</TableCell>
-                        <TableCell component="th" scope="col" align="right">Recommended Order</TableCell>
-                        <TableCell component="th" scope="col" align="center">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {alerts
-                        .filter((a) => a.status === 'active' && a.stockStatus === 'critical')
-                        .slice(0, 5)
-                        .map((alert) => (
-                          <TableRow key={alert.id} sx={{ bgcolor: isDark ? 'rgba(244, 67, 54, 0.16)' : 'rgba(244, 67, 54, 0.08)' }}>
-                            <TableCell>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                {alert.productName}
+      {!alertsLoading && criticalAlerts.length > 0 && (
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid item xs={12}>
+              <DashboardCard
+                title="Critical Stock Alerts"
+                subtitle="Products requiring immediate attention"
+                action={
+                  <Button
+                    component={Link}
+                    href="/alerts"
+                    variant="outlined"
+                    size="small"
+                  >
+                    View All Alerts
+                  </Button>
+                }
+              >
+                <Box sx={{ mt: 2 }}>
+                  <Alert severity="error" sx={{ mb: 2 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {alerts.filter(
+                        (a) =>
+                          a.status === "active" && a.stockStatus === "critical"
+                      ).length}{" "}
+                      critical alert
+                      {alerts.filter(
+                        (a) =>
+                          a.status === "active" && a.stockStatus === "critical"
+                      ).length !== 1
+                        ? "s"
+                        : ""}{" "}
+                      requiring immediate action
+                    </Typography>
+                  </Alert>
+                  {isMobile ? (
+                    <Box sx={{ display: "grid", gap: 2 }}>
+                      {criticalAlerts.map((alert) => (
+                        <Box
+                          key={alert.id}
+                          sx={{
+                            border: "1px solid",
+                            borderColor: "divider",
+                            borderRadius: 2,
+                            p: 2,
+                            bgcolor: isDark
+                              ? "rgba(244, 67, 54, 0.12)"
+                              : "rgba(244, 67, 54, 0.06)",
+                          }}
+                        >
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                            {alert.productName}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {alert.productSku}
+                          </Typography>
+                          <Box sx={{ mt: 1.5, display: "grid", gap: 1 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <Typography variant="body2" color="text.secondary">
+                                Current stock
                               </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {alert.productSku}
-                              </Typography>
-                            </TableCell>
-                            <TableCell align="right">
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: 'error.main' }}>
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600, color: "error.main" }}
+                              >
                                 {alert.currentStock.toLocaleString()}
                               </Typography>
-                            </TableCell>
-                            <TableCell align="right">
+                            </Box>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
                               <Typography variant="body2" color="text.secondary">
+                                Reorder point
+                              </Typography>
+                              <Typography variant="body2">
                                 {alert.reorderPoint.toLocaleString()}
                               </Typography>
-                            </TableCell>
-                            <TableCell align="right">
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                                {alert.recommendedReorderQuantity.toLocaleString()} units
+                            </Box>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <Typography variant="body2" color="text.secondary">
+                                Recommended order
                               </Typography>
-                            </TableCell>
-                            <TableCell align="center">
-                              <Button
-                                size="small"
-                                component={Link}
-                                href="/alerts"
-                                variant="outlined"
-                                color="error"
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600, color: "primary.main" }}
                               >
-                                View Details
-                              </Button>
+                                {alert.recommendedReorderQuantity.toLocaleString()}{" "}
+                                units
+                              </Typography>
+                            </Box>
+                          </Box>
+                          <Button
+                            size="small"
+                            component={Link}
+                            href="/alerts"
+                            variant="outlined"
+                            color="error"
+                            sx={{ mt: 2 }}
+                            fullWidth
+                          >
+                            View Details
+                          </Button>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <TableContainer>
+                      <Table
+                        size="small"
+                        aria-label="Critical stock alerts table"
+                      >
+                        <TableHead>
+                          <TableRow>
+                            <TableCell component="th" scope="col">
+                              Product
+                            </TableCell>
+                            <TableCell component="th" scope="col" align="right">
+                              Current Stock
+                            </TableCell>
+                            <TableCell component="th" scope="col" align="right">
+                              Reorder Point
+                            </TableCell>
+                            <TableCell component="th" scope="col" align="right">
+                              Recommended Order
+                            </TableCell>
+                            <TableCell component="th" scope="col" align="center">
+                              Actions
                             </TableCell>
                           </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Box>
-            </DashboardCard>
+                        </TableHead>
+                        <TableBody>
+                          {criticalAlerts.map((alert) => (
+                            <TableRow
+                              key={alert.id}
+                              sx={{
+                                bgcolor: isDark
+                                  ? "rgba(244, 67, 54, 0.16)"
+                                  : "rgba(244, 67, 54, 0.08)",
+                              }}
+                            >
+                              <TableCell>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: 600 }}
+                                >
+                                  {alert.productName}
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  {alert.productSku}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: 600, color: "error.main" }}
+                                >
+                                  {alert.currentStock.toLocaleString()}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {alert.reorderPoint.toLocaleString()}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontWeight: 600,
+                                    color: "primary.main",
+                                  }}
+                                >
+                                  {alert.recommendedReorderQuantity.toLocaleString()}{" "}
+                                  units
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="center">
+                                <Button
+                                  size="small"
+                                  component={Link}
+                                  href="/alerts"
+                                  variant="outlined"
+                                  color="error"
+                                >
+                                  View Details
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  )}
+                </Box>
+              </DashboardCard>
+            </Grid>
           </Grid>
-        </Grid>
-      )}
+        )}
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} md={5}>
@@ -779,12 +1071,18 @@ export default function Home() {
             <DashboardCard
               title="Top 10 products by total quantity"
               subtitle="Highest stocked products across all warehouses"
-              sx={{ height: '100%' }}
+              sx={{ height: "100%" }}
             >
-              <Box sx={{ mt: 2, display: 'grid', gap: 2 }}>
+              <Box sx={{ mt: 2, display: "grid", gap: 2 }}>
                 {chartData.topProducts.map((item) => (
                   <Box key={item.sku}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 0.5,
+                      }}
+                    >
                       <Typography variant="body2">{item.name}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         {item.quantity.toLocaleString()}
@@ -792,13 +1090,19 @@ export default function Home() {
                     </Box>
                     <LinearProgress
                       variant="determinate"
-                      value={topProductMax ? (item.quantity / topProductMax) * 100 : 0}
+                      value={
+                        topProductMax
+                          ? (item.quantity / topProductMax) * 100
+                          : 0
+                      }
                       sx={{
                         height: 6,
                         borderRadius: 10,
-                        bgcolor: isDark ? 'rgba(46, 125, 50, 0.2)' : 'rgba(46, 125, 50, 0.1)',
-                        '& .MuiLinearProgress-bar': {
-                          backgroundColor: 'primary.main',
+                        bgcolor: isDark
+                          ? "rgba(46, 125, 50, 0.2)"
+                          : "rgba(46, 125, 50, 0.1)",
+                        "& .MuiLinearProgress-bar": {
+                          backgroundColor: "primary.main",
                           borderRadius: 10,
                         },
                       }}
@@ -814,26 +1118,63 @@ export default function Home() {
             title="Inventory overview"
             subtitle="Search, sort, and manage current stock positions"
             action={
-              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={exporting ? <CircularProgress size={16} /> : <FileDownloadIcon />}
-                  endIcon={<ArrowDropDownIcon />}
-                  onClick={handleExportMenuOpen}
-                  disabled={exporting || inventoryOverview.length === 0}
-                >
-                  Export
-                </Button>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1.5,
+                  alignItems: { xs: "stretch", sm: "center" },
+                  flexDirection: { xs: "column", sm: "row" },
+                  flexWrap: "wrap",
+                  width: "100%",
+                }}
+              >
+                {isMobile ? (
+                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                    <IconButton
+                      onClick={handleExportMenuOpen}
+                      disabled={exporting || inventoryOverview.length === 0}
+                      aria-label="Open export options"
+                    >
+                      {exporting ? (
+                        <CircularProgress size={20} />
+                      ) : (
+                        <MoreVertIcon />
+                      )}
+                    </IconButton>
+                  </Box>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={
+                      exporting ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        <FileDownloadIcon />
+                      )
+                    }
+                    endIcon={<ArrowDropDownIcon />}
+                    onClick={handleExportMenuOpen}
+                    disabled={exporting || inventoryOverview.length === 0}
+                  >
+                    Export
+                  </Button>
+                )}
                 <Menu
                   anchorEl={exportMenuAnchor}
                   open={Boolean(exportMenuAnchor)}
                   onClose={handleExportMenuClose}
                 >
-                  <MenuItem onClick={handleExportCsv} disabled={exporting || inventoryOverview.length === 0}>
+                  <MenuItem
+                    onClick={handleExportCsv}
+                    disabled={exporting || inventoryOverview.length === 0}
+                  >
                     Export CSV
                   </MenuItem>
-                  <MenuItem onClick={handleExportPdf} disabled={exporting || inventoryOverview.length === 0}>
+                  <MenuItem
+                    onClick={handleExportPdf}
+                    disabled={exporting || inventoryOverview.length === 0}
+                  >
                     Export PDF
                   </MenuItem>
                 </Menu>
@@ -846,7 +1187,7 @@ export default function Home() {
                     setPage(0);
                   }}
                   inputProps={{
-                    'data-shortcut': 'search',
+                    "data-shortcut": "search",
                   }}
                   InputProps={{
                     startAdornment: (
@@ -856,7 +1197,7 @@ export default function Home() {
                     ),
                   }}
                   aria-label="Search products by name, SKU, or category"
-                  sx={{ width: { xs: '100%', sm: 260 } }}
+                  sx={{ width: { xs: "100%", sm: 260 } }}
                 />
               </Box>
             }
@@ -868,126 +1209,260 @@ export default function Home() {
             ) : inventoryOverview.length === 0 ? (
               <Alert severity="info" sx={{ mt: 2 }}>
                 {searchQuery
-                  ? 'No products match your search criteria.'
-                  : 'No products available. Add your first product to get started.'}
+                  ? "No products match your search criteria."
+                  : "No products available. Add your first product to get started."}
               </Alert>
             ) : (
               <>
-                <TableContainer sx={{ mt: 2 }}>
-                  <Table aria-label="Inventory overview table">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell component="th" scope="col">
-                          <TableSortLabel
-                            active={sortField === 'name'}
-                            direction={sortField === 'name' ? sortDirection : 'asc'}
-                            onClick={() => handleSort('name')}
-                          >
-                            Product Name
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell component="th" scope="col">
-                          <TableSortLabel
-                            active={sortField === 'sku'}
-                            direction={sortField === 'sku' ? sortDirection : 'asc'}
-                            onClick={() => handleSort('sku')}
-                          >
-                            SKU
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell component="th" scope="col">
-                          <TableSortLabel
-                            active={sortField === 'category'}
-                            direction={sortField === 'category' ? sortDirection : 'asc'}
-                            onClick={() => handleSort('category')}
-                          >
-                            Category
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell component="th" scope="col" align="right">
-                          <TableSortLabel
-                            active={sortField === 'totalQuantity'}
-                            direction={sortField === 'totalQuantity' ? sortDirection : 'asc'}
-                            onClick={() => handleSort('totalQuantity')}
-                          >
-                            Total Stock
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell component="th" scope="col" align="right">
-                          <TableSortLabel
-                            active={sortField === 'totalValue'}
-                            direction={sortField === 'totalValue' ? sortDirection : 'asc'}
-                            onClick={() => handleSort('totalValue')}
-                          >
-                            Total Value
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell component="th" scope="col" align="center">Status</TableCell>
-                        <TableCell component="th" scope="col" align="center">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {paginatedOverview.map((item) => (
-                        <TableRow
-                          key={item.id}
-                            sx={{
-                            backgroundColor:
-                              item.status === 'Out'
-                                ? isDark ? 'rgba(244, 67, 54, 0.16)' : 'rgba(244, 67, 54, 0.08)'
-                                : item.status === 'Low'
-                                ? isDark ? 'rgba(255, 152, 0, 0.2)' : 'rgba(255, 152, 0, 0.12)'
-                                : 'inherit',
+                {isMobile ? (
+                  <Box sx={{ mt: 2, display: "grid", gap: 2 }}>
+                    {paginatedOverview.map((item) => (
+                      <Box
+                        key={item.id}
+                        sx={{
+                          border: "1px solid",
+                          borderColor: "divider",
+                          borderRadius: 2,
+                          p: 2,
+                          bgcolor:
+                            item.status === "Out"
+                              ? isDark
+                                ? "rgba(244, 67, 54, 0.12)"
+                                : "rgba(244, 67, 54, 0.06)"
+                              : item.status === "Low"
+                              ? isDark
+                                ? "rgba(255, 152, 0, 0.2)"
+                                : "rgba(255, 152, 0, 0.1)"
+                              : "background.paper",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            gap: 1,
                           }}
                         >
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell>{item.sku}</TableCell>
-                          <TableCell>{item.category}</TableCell>
-                          <TableCell align="right">{item.totalQuantity.toLocaleString()}</TableCell>
-                          <TableCell align="right">
-                            ${item.totalValue.toLocaleString('en-US', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </TableCell>
-                          <TableCell align="center">
-                            <Chip
-                              label={item.status}
-                              color={
-                                item.status === 'Out'
-                                  ? 'error'
-                                  : item.status === 'Low'
-                                  ? 'warning'
-                                  : 'success'
+                          <Box>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                              {item.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {item.sku} • {item.category}
+                            </Typography>
+                          </Box>
+                          <Chip
+                            label={item.status}
+                            color={
+                              item.status === "Out"
+                                ? "error"
+                                : item.status === "Low"
+                                ? "warning"
+                                : "success"
+                            }
+                            size="small"
+                            variant="outlined"
+                            aria-label={`Stock status: ${item.status}`}
+                          />
+                        </Box>
+                        <Box sx={{ mt: 1.5, display: "grid", gap: 1 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <Typography variant="body2" color="text.secondary">
+                              Total stock
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {item.totalQuantity.toLocaleString()}
+                            </Typography>
+                          </Box>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <Typography variant="body2" color="text.secondary">
+                              Total value
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              $
+                              {item.totalValue.toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Box sx={{ mt: 2, display: "grid", gap: 1 }}>
+                          <Button
+                            size="small"
+                            component={Link}
+                            href={`/products/edit/${item.id}`}
+                            variant="outlined"
+                            fullWidth
+                          >
+                            View
+                          </Button>
+                          <Button
+                            size="small"
+                            component={Link}
+                            href="/stock"
+                            variant="text"
+                            fullWidth
+                          >
+                            Manage Stock
+                          </Button>
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                ) : (
+                  <TableContainer sx={{ mt: 2 }}>
+                    <Table aria-label="Inventory overview table">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell component="th" scope="col">
+                            <TableSortLabel
+                              active={sortField === "name"}
+                              direction={
+                                sortField === "name" ? sortDirection : "asc"
                               }
-                              size="small"
-                              variant="outlined"
-                              aria-label={`Stock status: ${item.status}`}
-                            />
+                              onClick={() => handleSort("name")}
+                            >
+                              Product Name
+                            </TableSortLabel>
                           </TableCell>
-                          <TableCell align="center">
-                            <Button
-                              size="small"
-                              component={Link}
-                              href={`/products/edit/${item.id}`}
-                              variant="outlined"
+                          <TableCell component="th" scope="col">
+                            <TableSortLabel
+                              active={sortField === "sku"}
+                              direction={
+                                sortField === "sku" ? sortDirection : "asc"
+                              }
+                              onClick={() => handleSort("sku")}
                             >
-                              View
-                            </Button>
-                            <Button
-                              size="small"
-                              component={Link}
-                              href="/stock"
-                              variant="text"
-                              sx={{ ml: 1 }}
+                              SKU
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell component="th" scope="col">
+                            <TableSortLabel
+                              active={sortField === "category"}
+                              direction={
+                                sortField === "category" ? sortDirection : "asc"
+                              }
+                              onClick={() => handleSort("category")}
                             >
-                              Manage Stock
-                            </Button>
+                              Category
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell component="th" scope="col" align="right">
+                            <TableSortLabel
+                              active={sortField === "totalQuantity"}
+                              direction={
+                                sortField === "totalQuantity"
+                                  ? sortDirection
+                                  : "asc"
+                              }
+                              onClick={() => handleSort("totalQuantity")}
+                            >
+                              Total Stock
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell component="th" scope="col" align="right">
+                            <TableSortLabel
+                              active={sortField === "totalValue"}
+                              direction={
+                                sortField === "totalValue"
+                                  ? sortDirection
+                                  : "asc"
+                              }
+                              onClick={() => handleSort("totalValue")}
+                            >
+                              Total Value
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell component="th" scope="col" align="center">
+                            Status
+                          </TableCell>
+                          <TableCell component="th" scope="col" align="center">
+                            Actions
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                      </TableHead>
+                      <TableBody>
+                        {paginatedOverview.map((item) => (
+                          <TableRow
+                            key={item.id}
+                            sx={{
+                              backgroundColor:
+                                item.status === "Out"
+                                  ? isDark
+                                    ? "rgba(244, 67, 54, 0.16)"
+                                    : "rgba(244, 67, 54, 0.08)"
+                                  : item.status === "Low"
+                                  ? isDark
+                                    ? "rgba(255, 152, 0, 0.2)"
+                                    : "rgba(255, 152, 0, 0.12)"
+                                  : "inherit",
+                            }}
+                          >
+                            <TableCell>{item.name}</TableCell>
+                            <TableCell>{item.sku}</TableCell>
+                            <TableCell>{item.category}</TableCell>
+                            <TableCell align="right">
+                              {item.totalQuantity.toLocaleString()}
+                            </TableCell>
+                            <TableCell align="right">
+                              $
+                              {item.totalValue.toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Chip
+                                label={item.status}
+                                color={
+                                  item.status === "Out"
+                                    ? "error"
+                                    : item.status === "Low"
+                                    ? "warning"
+                                    : "success"
+                                }
+                                size="small"
+                                variant="outlined"
+                                aria-label={`Stock status: ${item.status}`}
+                              />
+                            </TableCell>
+                            <TableCell align="center">
+                              <Button
+                                size="small"
+                                component={Link}
+                                href={`/products/edit/${item.id}`}
+                                variant="outlined"
+                              >
+                                View
+                              </Button>
+                              <Button
+                                size="small"
+                                component={Link}
+                                href="/stock"
+                                variant="text"
+                                sx={{ ml: 1 }}
+                              >
+                                Manage Stock
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
                 <TablePagination
                   component="div"
                   count={inventoryOverview.length}
@@ -1008,14 +1483,16 @@ export default function Home() {
         open={exportSnackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseExportSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert 
-          onClose={handleCloseExportSnackbar} 
-          severity={exportSnackbar.severity} 
-          sx={{ width: '100%' }}
-          role={exportSnackbar.severity === 'error' ? 'alert' : 'status'}
-          aria-live={exportSnackbar.severity === 'error' ? 'assertive' : 'polite'}
+        <Alert
+          onClose={handleCloseExportSnackbar}
+          severity={exportSnackbar.severity}
+          sx={{ width: "100%" }}
+          role={exportSnackbar.severity === "error" ? "alert" : "status"}
+          aria-live={
+            exportSnackbar.severity === "error" ? "assertive" : "polite"
+          }
         >
           {exportSnackbar.message}
         </Alert>

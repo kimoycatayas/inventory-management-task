@@ -8,10 +8,8 @@ import {
   Button,
   Box,
   Paper,
-  AppBar,
-  Toolbar,
+  Grid,
 } from "@mui/material";
-import InventoryIcon from "@mui/icons-material/Inventory";
 
 export default function AddProduct() {
   const [product, setProduct] = useState({
@@ -47,8 +45,13 @@ export default function AddProduct() {
   return (
     <>
       <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
+        <Paper elevation={3} sx={{ p: { xs: 3, sm: 4 } }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{ fontSize: { xs: 22, sm: 28, md: 34 } }}
+          >
             Add New Product
           </Typography>
           <Box
@@ -57,56 +60,74 @@ export default function AddProduct() {
             noValidate
             sx={{ mt: 2 }}
           >
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="SKU"
-              name="sku"
-              value={product.sku}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Product Name"
-              name="name"
-              value={product.name}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Category"
-              name="category"
-              value={product.category}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Unit Cost"
-              name="unitCost"
-              type="number"
-              inputProps={{ step: "0.01", min: "0" }}
-              value={product.unitCost}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Reorder Point"
-              name="reorderPoint"
-              type="number"
-              inputProps={{ min: "0" }}
-              value={product.reorderPoint}
-              onChange={handleChange}
-            />
-            <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="SKU"
+                  name="sku"
+                  value={product.sku}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Category"
+                  name="category"
+                  value={product.category}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Product Name"
+                  name="name"
+                  value={product.name}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Unit Cost"
+                  name="unitCost"
+                  type="number"
+                  inputProps={{
+                    step: "0.01",
+                    min: "0",
+                    inputMode: "decimal",
+                  }}
+                  value={product.unitCost}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Reorder Point"
+                  name="reorderPoint"
+                  type="number"
+                  inputProps={{ min: "0", inputMode: "numeric" }}
+                  value={product.reorderPoint}
+                  onChange={handleChange}
+                />
+              </Grid>
+            </Grid>
+            <Box
+              sx={{
+                mt: 3,
+                display: "flex",
+                gap: 2,
+                flexDirection: { xs: "column", sm: "row" },
+              }}
+            >
               <Button
                 type="submit"
                 fullWidth

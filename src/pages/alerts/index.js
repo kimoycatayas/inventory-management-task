@@ -30,6 +30,9 @@ import {
   DialogContent,
   DialogActions,
   DialogContentText,
+  useMediaQuery,
+  useTheme,
+  Paper,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -40,6 +43,9 @@ import AppLayout from "@/components/AppLayout";
 import DashboardCard from "@/components/DashboardCard";
 
 export default function Alerts() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  
   // Data state
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -275,12 +281,19 @@ export default function Alerts() {
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-start",
+            alignItems: { xs: "stretch", sm: "flex-start" },
+            flexDirection: { xs: "column", sm: "row" },
             mb: 3,
+            gap: 2,
           }}
         >
           <Box>
-            <Typography variant="h4" component="h1" gutterBottom>
+            <Typography
+              variant="h4"
+              component="h1"
+              gutterBottom
+              sx={{ fontSize: { xs: 22, sm: 28, md: 34 } }}
+            >
               Low Stock Alerts & Reorder System
             </Typography>
             <Typography variant="body1" color="text.secondary">
@@ -288,7 +301,7 @@ export default function Alerts() {
               recommendations.
             </Typography>
           </Box>
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 2, width: { xs: "100%", sm: "auto" } }}>
             <Tooltip title="Regenerate alerts based on current stock levels">
               <Button
                 variant="outlined"
@@ -301,6 +314,7 @@ export default function Alerts() {
                 }
                 onClick={handleRegenerate}
                 disabled={regenerating || loading}
+                fullWidth={isMobile}
               >
                 {regenerating ? "Regenerating..." : "Regenerate Alerts"}
               </Button>
@@ -392,8 +406,16 @@ export default function Alerts() {
           title="Inventory Alerts"
           subtitle="View and manage stock alerts with reorder recommendations"
           action={
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                flexWrap: "wrap",
+                flexDirection: { xs: "column", sm: "row" },
+                width: { xs: "100%", sm: "auto" },
+              }}
+            >
+              <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 150 } }}>
                 <InputLabel>Alert Status</InputLabel>
                 <Select
                   value={filterStatus}
@@ -410,7 +432,7 @@ export default function Alerts() {
                   <MenuItem value="dismissed">Dismissed</MenuItem>
                 </Select>
               </FormControl>
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+              <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 150 } }}>
                 <InputLabel>Stock Status</InputLabel>
                 <Select
                   value={filterStockStatus}
@@ -441,77 +463,108 @@ export default function Alerts() {
             </Alert>
           ) : (
             <>
-              <TableContainer sx={{ mt: 2 }}>
-                <Table aria-label="Stock alerts table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell component="th" scope="col">Product</TableCell>
-                      <TableCell component="th" scope="col" align="right">Current Stock</TableCell>
-                      <TableCell component="th" scope="col" align="right">Reorder Point</TableCell>
-                      <TableCell component="th" scope="col" align="center">Stock Status</TableCell>
-                      <TableCell component="th" scope="col" align="right">Recommended Order</TableCell>
-                      <TableCell component="th" scope="col" align="center">Alert Status</TableCell>
-                      <TableCell component="th" scope="col">Warehouses</TableCell>
-                      <TableCell component="th" scope="col" align="center">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {paginatedAlerts.map((alert) => (
-                      <TableRow
-                        key={alert.id}
-                        hover
+              {isMobile ? (
+                <Box sx={{ mt: 2, display: "grid", gap: 2 }}>
+                  {paginatedAlerts.map((alert) => (
+                    <Paper
+                      key={alert.id}
+                      sx={{
+                        p: 2,
+                        bgcolor:
+                          alert.stockStatus === "critical"
+                            ? "rgba(244, 67, 54, 0.06)"
+                            : alert.stockStatus === "low"
+                            ? "rgba(255, 152, 0, 0.08)"
+                            : "background.paper",
+                        border: "1px solid",
+                        borderColor: "divider",
+                      }}
+                    >
+                      <Box
                         sx={{
-                          backgroundColor:
-                            alert.stockStatus === "critical"
-                              ? "rgba(244, 67, 54, 0.08)"
-                              : alert.stockStatus === "low"
-                              ? "rgba(255, 152, 0, 0.12)"
-                              : "inherit",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          mb: 1.5,
                         }}
                       >
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        <Box>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                             {alert.productName}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
                             {alert.productSku} • {alert.productCategory}
                           </Typography>
-                        </TableCell>
-                        <TableCell align="right">
+                        </Box>
+                        <Chip
+                          icon={getStatusIcon(alert.stockStatus)}
+                          label={alert.stockStatus.toUpperCase()}
+                          color={getStatusColor(alert.stockStatus)}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </Box>
+                      <Box sx={{ display: "grid", gap: 1, mt: 1.5 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            Current stock
+                          </Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
                             {alert.currentStock.toLocaleString()}
                           </Typography>
-                        </TableCell>
-                        <TableCell align="right">
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
+                            Reorder point
+                          </Typography>
+                          <Typography variant="body2">
                             {alert.reorderPoint.toLocaleString()}
                           </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Chip
-                            icon={getStatusIcon(alert.stockStatus)}
-                            label={alert.stockStatus.toUpperCase()}
-                            color={getStatusColor(alert.stockStatus)}
-                            size="small"
-                            variant="outlined"
-                          />
-                        </TableCell>
-                        <TableCell align="right">
-                          {alert.recommendedReorderQuantity > 0 ? (
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600, color: "primary.main" }}
-                            >
-                              {alert.recommendedReorderQuantity.toLocaleString()}{" "}
-                              units
-                            </Typography>
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              N/A
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell align="center">
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            Recommended order
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: 600,
+                              color:
+                                alert.recommendedReorderQuantity > 0
+                                  ? "primary.main"
+                                  : "text.secondary",
+                            }}
+                          >
+                            {alert.recommendedReorderQuantity > 0
+                              ? `${alert.recommendedReorderQuantity.toLocaleString()} units`
+                              : "N/A"}
+                          </Typography>
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            Alert status
+                          </Typography>
                           <Chip
                             label={alert.status}
                             color={
@@ -526,89 +579,249 @@ export default function Alerts() {
                             size="small"
                             variant="outlined"
                           />
-                        </TableCell>
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 0.5,
-                            }}
-                          >
+                        </Box>
+                        {alert.warehouses && alert.warehouses.length > 0 && (
+                          <Box sx={{ mt: 0.5 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Warehouses:
+                            </Typography>
                             {alert.warehouses.map((wh) => (
                               <Typography
                                 key={wh.warehouseId}
                                 variant="caption"
                                 color="text.secondary"
+                                sx={{ display: "block" }}
                               >
-                                {wh.warehouseName}:{" "}
-                                {wh.quantity.toLocaleString()}
+                                {wh.warehouseName}: {wh.quantity.toLocaleString()}
                               </Typography>
                             ))}
                           </Box>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Box
-                            sx={{
-                              display: "flex",
-                              gap: 0.5,
-                              justifyContent: "center",
-                            }}
-                          >
-                            {alert.status === "active" && (
-                              <>
-                                <Tooltip title="Acknowledge">
-                                  <IconButton
-                                    size="small"
-                                    color="warning"
-                                    onClick={() =>
-                                      handleOpenDialog(alert, "acknowledge")
-                                    }
-                                  >
-                                    <CheckCircleIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Resolve">
-                                  <IconButton
-                                    size="small"
-                                    color="success"
-                                    onClick={() =>
-                                      handleOpenDialog(alert, "resolve")
-                                    }
-                                  >
-                                    <CheckCircleIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              </>
-                            )}
-                            <Tooltip title="Dismiss">
-                              <IconButton
-                                size="small"
-                                color="default"
-                                onClick={() =>
-                                  handleOpenDialog(alert, "dismiss")
-                                }
-                              >
-                                <CancelIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="View Product">
-                              <IconButton
-                                size="small"
-                                component={Link}
-                                href={`/products/edit/${alert.productId}`}
-                                color="primary"
-                              >
-                                <InventoryIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </TableCell>
+                        )}
+                      </Box>
+                      <Box
+                        sx={{
+                          mt: 2,
+                          display: "flex",
+                          gap: 1,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {alert.status === "active" && (
+                          <>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="warning"
+                              onClick={() =>
+                                handleOpenDialog(alert, "acknowledge")
+                              }
+                              startIcon={<CheckCircleIcon fontSize="small" />}
+                            >
+                              Acknowledge
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="success"
+                              onClick={() => handleOpenDialog(alert, "resolve")}
+                              startIcon={<CheckCircleIcon fontSize="small" />}
+                            >
+                              Resolve
+                            </Button>
+                          </>
+                        )}
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleOpenDialog(alert, "dismiss")}
+                          startIcon={<CancelIcon fontSize="small" />}
+                        >
+                          Dismiss
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="primary"
+                          component={Link}
+                          href={`/products/edit/${alert.productId}`}
+                          startIcon={<InventoryIcon fontSize="small" />}
+                        >
+                          View Product
+                        </Button>
+                      </Box>
+                    </Paper>
+                  ))}
+                </Box>
+              ) : (
+                <TableContainer sx={{ mt: 2 }}>
+                  <Table aria-label="Stock alerts table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell component="th" scope="col">Product</TableCell>
+                        <TableCell component="th" scope="col" align="right">Current Stock</TableCell>
+                        <TableCell component="th" scope="col" align="right">Reorder Point</TableCell>
+                        <TableCell component="th" scope="col" align="center">Stock Status</TableCell>
+                        <TableCell component="th" scope="col" align="right">Recommended Order</TableCell>
+                        <TableCell component="th" scope="col" align="center">Alert Status</TableCell>
+                        <TableCell component="th" scope="col">Warehouses</TableCell>
+                        <TableCell component="th" scope="col" align="center">Actions</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedAlerts.map((alert) => (
+                        <TableRow
+                          key={alert.id}
+                          hover
+                          sx={{
+                            backgroundColor:
+                              alert.stockStatus === "critical"
+                                ? "rgba(244, 67, 54, 0.08)"
+                                : alert.stockStatus === "low"
+                                ? "rgba(255, 152, 0, 0.12)"
+                                : "inherit",
+                          }}
+                        >
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {alert.productName}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {alert.productSku} • {alert.productCategory}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {alert.currentStock.toLocaleString()}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2" color="text.secondary">
+                              {alert.reorderPoint.toLocaleString()}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip
+                              icon={getStatusIcon(alert.stockStatus)}
+                              label={alert.stockStatus.toUpperCase()}
+                              color={getStatusColor(alert.stockStatus)}
+                              size="small"
+                              variant="outlined"
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            {alert.recommendedReorderQuantity > 0 ? (
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600, color: "primary.main" }}
+                              >
+                                {alert.recommendedReorderQuantity.toLocaleString()}{" "}
+                                units
+                              </Typography>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                N/A
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip
+                              label={alert.status}
+                              color={
+                                alert.status === "active"
+                                  ? "error"
+                                  : alert.status === "acknowledged"
+                                  ? "warning"
+                                  : alert.status === "resolved"
+                                  ? "success"
+                                  : "default"
+                              }
+                              size="small"
+                              variant="outlined"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 0.5,
+                              }}
+                            >
+                              {alert.warehouses.map((wh) => (
+                                <Typography
+                                  key={wh.warehouseId}
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  {wh.warehouseName}:{" "}
+                                  {wh.quantity.toLocaleString()}
+                                </Typography>
+                              ))}
+                            </Box>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Box
+                              sx={{
+                                display: "flex",
+                                gap: 0.5,
+                                justifyContent: "center",
+                              }}
+                            >
+                              {alert.status === "active" && (
+                                <>
+                                  <Tooltip title="Acknowledge">
+                                    <IconButton
+                                      size="small"
+                                      color="warning"
+                                      onClick={() =>
+                                        handleOpenDialog(alert, "acknowledge")
+                                      }
+                                    >
+                                      <CheckCircleIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Resolve">
+                                    <IconButton
+                                      size="small"
+                                      color="success"
+                                      onClick={() =>
+                                        handleOpenDialog(alert, "resolve")
+                                      }
+                                    >
+                                      <CheckCircleIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </>
+                              )}
+                              <Tooltip title="Dismiss">
+                                <IconButton
+                                  size="small"
+                                  color="default"
+                                  onClick={() =>
+                                    handleOpenDialog(alert, "dismiss")
+                                  }
+                                >
+                                  <CancelIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="View Product">
+                                <IconButton
+                                  size="small"
+                                  component={Link}
+                                  href={`/products/edit/${alert.productId}`}
+                                  color="primary"
+                                >
+                                  <InventoryIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
               <TablePagination
                 component="div"
                 count={filteredAlerts.length}
@@ -673,8 +886,20 @@ export default function Alerts() {
             </>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+        <DialogActions
+          sx={{
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1,
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+          }}
+        >
+          <Button
+            onClick={handleCloseDialog}
+            fullWidth={isMobile}
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleUpdateAlert}
             variant="contained"
@@ -685,6 +910,7 @@ export default function Alerts() {
                 ? "warning"
                 : "default"
             }
+            fullWidth={isMobile}
           >
             {actionType === "acknowledge"
               ? "Acknowledge"
