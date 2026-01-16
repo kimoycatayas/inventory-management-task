@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
 import {
   Container,
   Typography,
@@ -11,14 +11,14 @@ import {
   AppBar,
   Toolbar,
   MenuItem,
-} from '@mui/material';
-import InventoryIcon from '@mui/icons-material/Inventory';
+} from "@mui/material";
+import InventoryIcon from "@mui/icons-material/Inventory";
 
 export default function AddStock() {
   const [stock, setStock] = useState({
-    productId: '',
-    warehouseId: '',
-    quantity: '',
+    productId: "",
+    warehouseId: "",
+    quantity: "",
   });
   const [products, setProducts] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
@@ -27,8 +27,8 @@ export default function AddStock() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/products').then(res => res.json()),
-      fetch('/api/warehouses').then(res => res.json()),
+      fetch("/api/products").then((res) => res.json()),
+      fetch("/api/warehouses").then((res) => res.json()),
     ]).then(([productsData, warehousesData]) => {
       setProducts(productsData);
       setWarehouses(warehousesData);
@@ -41,9 +41,9 @@ export default function AddStock() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/stock', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/stock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         productId: parseInt(stock.productId),
         warehouseId: parseInt(stock.warehouseId),
@@ -51,39 +51,23 @@ export default function AddStock() {
       }),
     });
     if (res.ok) {
-      router.push('/stock');
+      router.push("/stock");
     }
   };
 
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
-          <InventoryIcon sx={{ mr: 2 }} />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Inventory Management System
-          </Typography>
-          <Button color="inherit" component={Link} href="/">
-            Dashboard
-          </Button>
-          <Button color="inherit" component={Link} href="/products">
-            Products
-          </Button>
-          <Button color="inherit" component={Link} href="/warehouses">
-            Warehouses
-          </Button>
-          <Button color="inherit" component={Link} href="/stock">
-            Stock Levels
-          </Button>
-        </Toolbar>
-      </AppBar>
-
       <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
           <Typography variant="h4" component="h1" gutterBottom>
             Add Stock Record
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{ mt: 2 }}
+          >
             <TextField
               margin="normal"
               required
@@ -123,11 +107,11 @@ export default function AddStock() {
               label="Quantity"
               name="quantity"
               type="number"
-              inputProps={{ min: '0' }}
+              inputProps={{ min: "0" }}
               value={stock.quantity}
               onChange={handleChange}
             />
-            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+            <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
               <Button
                 type="submit"
                 fullWidth
@@ -151,4 +135,3 @@ export default function AddStock() {
     </>
   );
 }
-

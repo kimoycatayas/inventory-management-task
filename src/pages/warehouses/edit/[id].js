@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
 import {
   Container,
   Typography,
@@ -11,14 +11,14 @@ import {
   AppBar,
   Toolbar,
   CircularProgress,
-} from '@mui/material';
-import InventoryIcon from '@mui/icons-material/Inventory';
+} from "@mui/material";
+import InventoryIcon from "@mui/icons-material/Inventory";
 
 export default function EditWarehouse() {
   const [warehouse, setWarehouse] = useState({
-    name: '',
-    location: '',
-    code: '',
+    name: "",
+    location: "",
+    code: "",
   });
   const [loading, setLoading] = useState(true);
 
@@ -43,18 +43,25 @@ export default function EditWarehouse() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const res = await fetch(`/api/warehouses/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(warehouse),
     });
     if (res.ok) {
-      router.push('/warehouses');
+      router.push("/warehouses");
     }
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -62,33 +69,17 @@ export default function EditWarehouse() {
 
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
-          <InventoryIcon sx={{ mr: 2 }} />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Inventory Management System
-          </Typography>
-          <Button color="inherit" component={Link} href="/">
-            Dashboard
-          </Button>
-          <Button color="inherit" component={Link} href="/products">
-            Products
-          </Button>
-          <Button color="inherit" component={Link} href="/warehouses">
-            Warehouses
-          </Button>
-          <Button color="inherit" component={Link} href="/stock">
-            Stock Levels
-          </Button>
-        </Toolbar>
-      </AppBar>
-
       <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
           <Typography variant="h4" component="h1" gutterBottom>
             Edit Warehouse
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{ mt: 2 }}
+          >
             <TextField
               margin="normal"
               required
@@ -116,7 +107,7 @@ export default function EditWarehouse() {
               value={warehouse.location}
               onChange={handleChange}
             />
-            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+            <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
               <Button
                 type="submit"
                 fullWidth
@@ -140,4 +131,3 @@ export default function EditWarehouse() {
     </>
   );
 }
-

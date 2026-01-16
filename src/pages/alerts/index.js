@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
+import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import {
   Box,
   Typography,
@@ -30,14 +30,14 @@ import {
   DialogContent,
   DialogActions,
   DialogContentText,
-} from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import WarningIcon from '@mui/icons-material/Warning';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import AppLayout from '@/components/AppLayout';
-import DashboardCard from '@/components/DashboardCard';
+} from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import WarningIcon from "@mui/icons-material/Warning";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import InventoryIcon from "@mui/icons-material/Inventory";
+import AppLayout from "@/components/AppLayout";
+import DashboardCard from "@/components/DashboardCard";
 
 export default function Alerts() {
   // Data state
@@ -47,8 +47,8 @@ export default function Alerts() {
   const [regenerating, setRegenerating] = useState(false);
 
   // Filter state
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterStockStatus, setFilterStockStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterStockStatus, setFilterStockStatus] = useState("all");
 
   // Table state
   const [page, setPage] = useState(0);
@@ -58,10 +58,14 @@ export default function Alerts() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [actionType, setActionType] = useState(null); // 'acknowledge', 'resolve', 'dismiss'
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
 
   // Feedback state
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   useEffect(() => {
     fetchAlerts();
@@ -71,15 +75,15 @@ export default function Alerts() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/alerts?regenerate=true');
+      const response = await fetch("/api/alerts?regenerate=true");
       if (!response.ok) {
-        throw new Error('Failed to fetch alerts');
+        throw new Error("Failed to fetch alerts");
       }
       const data = await response.json();
       setAlerts(data);
     } catch (err) {
-      setError('Failed to load alerts. Please try again.');
-      console.error('Error fetching alerts:', err);
+      setError("Failed to load alerts. Please try again.");
+      console.error("Error fetching alerts:", err);
     } finally {
       setLoading(false);
     }
@@ -89,23 +93,23 @@ export default function Alerts() {
     setRegenerating(true);
     setError(null);
     try {
-      const response = await fetch('/api/alerts?regenerate=true');
+      const response = await fetch("/api/alerts?regenerate=true");
       if (!response.ok) {
-        throw new Error('Failed to regenerate alerts');
+        throw new Error("Failed to regenerate alerts");
       }
       const data = await response.json();
       setAlerts(data);
       setSnackbar({
         open: true,
-        message: 'Alerts regenerated successfully',
-        severity: 'success',
+        message: "Alerts regenerated successfully",
+        severity: "success",
       });
     } catch (err) {
-      setError('Failed to regenerate alerts. Please try again.');
+      setError("Failed to regenerate alerts. Please try again.");
       setSnackbar({
         open: true,
-        message: 'Failed to regenerate alerts',
-        severity: 'error',
+        message: "Failed to regenerate alerts",
+        severity: "error",
       });
     } finally {
       setRegenerating(false);
@@ -115,7 +119,7 @@ export default function Alerts() {
   const handleOpenDialog = (alert, action) => {
     setSelectedAlert(alert);
     setActionType(action);
-    setNotes(alert.notes || '');
+    setNotes(alert.notes || "");
     setDialogOpen(true);
   };
 
@@ -123,7 +127,7 @@ export default function Alerts() {
     setDialogOpen(false);
     setSelectedAlert(null);
     setActionType(null);
-    setNotes('');
+    setNotes("");
   };
 
   const handleUpdateAlert = async () => {
@@ -131,18 +135,18 @@ export default function Alerts() {
 
     try {
       const newStatus =
-        actionType === 'acknowledge'
-          ? 'acknowledged'
-          : actionType === 'resolve'
-          ? 'resolved'
-          : actionType === 'dismiss'
-          ? 'dismissed'
+        actionType === "acknowledge"
+          ? "acknowledged"
+          : actionType === "resolve"
+          ? "resolved"
+          : actionType === "dismiss"
+          ? "dismissed"
           : selectedAlert.status;
 
       const response = await fetch(`/api/alerts/${selectedAlert.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           status: newStatus,
@@ -151,7 +155,7 @@ export default function Alerts() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update alert');
+        throw new Error("Failed to update alert");
       }
 
       // Refresh alerts
@@ -159,16 +163,22 @@ export default function Alerts() {
 
       setSnackbar({
         open: true,
-        message: `Alert ${actionType === 'acknowledge' ? 'acknowledged' : actionType === 'resolve' ? 'resolved' : 'dismissed'} successfully`,
-        severity: 'success',
+        message: `Alert ${
+          actionType === "acknowledge"
+            ? "acknowledged"
+            : actionType === "resolve"
+            ? "resolved"
+            : "dismissed"
+        } successfully`,
+        severity: "success",
       });
 
       handleCloseDialog();
     } catch (err) {
       setSnackbar({
         open: true,
-        message: 'Failed to update alert',
-        severity: 'error',
+        message: "Failed to update alert",
+        severity: "error",
       });
     }
   };
@@ -177,11 +187,11 @@ export default function Alerts() {
   const filteredAlerts = useMemo(() => {
     let filtered = [...alerts];
 
-    if (filterStatus !== 'all') {
+    if (filterStatus !== "all") {
       filtered = filtered.filter((a) => a.status === filterStatus);
     }
 
-    if (filterStockStatus !== 'all') {
+    if (filterStockStatus !== "all") {
       filtered = filtered.filter((a) => a.stockStatus === filterStockStatus);
     }
 
@@ -189,7 +199,10 @@ export default function Alerts() {
   }, [alerts, filterStatus, filterStockStatus]);
 
   const paginatedAlerts = useMemo(() => {
-    return filteredAlerts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    return filteredAlerts.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
   }, [filteredAlerts, page, rowsPerPage]);
 
   const handleChangePage = (event, newPage) => {
@@ -207,33 +220,48 @@ export default function Alerts() {
 
   // Calculate summary statistics
   const summary = useMemo(() => {
-    const active = alerts.filter((a) => a.status === 'active').length;
-    const critical = alerts.filter((a) => a.stockStatus === 'critical' && a.status !== 'resolved' && a.status !== 'dismissed').length;
-    const low = alerts.filter((a) => a.stockStatus === 'low' && a.status !== 'resolved' && a.status !== 'dismissed').length;
-    const overstocked = alerts.filter((a) => a.stockStatus === 'overstocked' && a.status !== 'resolved' && a.status !== 'dismissed').length;
+    const active = alerts.filter((a) => a.status === "active").length;
+    const critical = alerts.filter(
+      (a) =>
+        a.stockStatus === "critical" &&
+        a.status !== "resolved" &&
+        a.status !== "dismissed"
+    ).length;
+    const low = alerts.filter(
+      (a) =>
+        a.stockStatus === "low" &&
+        a.status !== "resolved" &&
+        a.status !== "dismissed"
+    ).length;
+    const overstocked = alerts.filter(
+      (a) =>
+        a.stockStatus === "overstocked" &&
+        a.status !== "resolved" &&
+        a.status !== "dismissed"
+    ).length;
     return { active, critical, low, overstocked };
   }, [alerts]);
 
   const getStatusColor = (stockStatus) => {
     switch (stockStatus) {
-      case 'critical':
-        return 'error';
-      case 'low':
-        return 'warning';
-      case 'overstocked':
-        return 'info';
+      case "critical":
+        return "error";
+      case "low":
+        return "warning";
+      case "overstocked":
+        return "info";
       default:
-        return 'default';
+        return "default";
     }
   };
 
   const getStatusIcon = (stockStatus) => {
     switch (stockStatus) {
-      case 'critical':
+      case "critical":
         return <WarningIcon fontSize="small" />;
-      case 'low':
+      case "low":
         return <WarningIcon fontSize="small" />;
-      case 'overstocked':
+      case "overstocked":
         return <InventoryIcon fontSize="small" />;
       default:
         return null;
@@ -241,13 +269,13 @@ export default function Alerts() {
   };
 
   return (
-    <AppLayout>
-      <Box>
+    <>
+      <Box sx={{ width: "100%", maxWidth: "100%" }}>
         <Box
           sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
             mb: 3,
           }}
         >
@@ -256,18 +284,25 @@ export default function Alerts() {
               Low Stock Alerts & Reorder System
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Monitor inventory levels and get actionable reorder recommendations.
+              Monitor inventory levels and get actionable reorder
+              recommendations.
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 2 }}>
             <Tooltip title="Regenerate alerts based on current stock levels">
               <Button
                 variant="outlined"
-                startIcon={regenerating ? <CircularProgress size={16} /> : <RefreshIcon />}
+                startIcon={
+                  regenerating ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <RefreshIcon />
+                  )
+                }
                 onClick={handleRegenerate}
                 disabled={regenerating || loading}
               >
-                {regenerating ? 'Regenerating...' : 'Regenerate Alerts'}
+                {regenerating ? "Regenerating..." : "Regenerate Alerts"}
               </Button>
             </Tooltip>
           </Box>
@@ -307,7 +342,10 @@ export default function Alerts() {
               <Typography variant="body2" color="text.secondary">
                 Critical Stock
               </Typography>
-              <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, color: 'error.main' }}>
+              <Typography
+                variant="h5"
+                sx={{ mt: 1, fontWeight: 700, color: "error.main" }}
+              >
                 {summary.critical}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -320,7 +358,10 @@ export default function Alerts() {
               <Typography variant="body2" color="text.secondary">
                 Low Stock
               </Typography>
-              <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, color: 'warning.main' }}>
+              <Typography
+                variant="h5"
+                sx={{ mt: 1, fontWeight: 700, color: "warning.main" }}
+              >
                 {summary.low}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -333,7 +374,10 @@ export default function Alerts() {
               <Typography variant="body2" color="text.secondary">
                 Overstocked
               </Typography>
-              <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, color: 'info.main' }}>
+              <Typography
+                variant="h5"
+                sx={{ mt: 1, fontWeight: 700, color: "info.main" }}
+              >
                 {summary.overstocked}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -348,7 +392,7 @@ export default function Alerts() {
           title="Inventory Alerts"
           subtitle="View and manage stock alerts with reorder recommendations"
           action={
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <FormControl size="small" sx={{ minWidth: 150 }}>
                 <InputLabel>Alert Status</InputLabel>
                 <Select
@@ -391,9 +435,9 @@ export default function Alerts() {
             </Box>
           ) : filteredAlerts.length === 0 ? (
             <Alert severity="info" sx={{ mt: 2 }}>
-              {filterStatus !== 'all' || filterStockStatus !== 'all'
-                ? 'No alerts match your filters.'
-                : 'No alerts found. All products are adequately stocked.'}
+              {filterStatus !== "all" || filterStockStatus !== "all"
+                ? "No alerts match your filters."
+                : "No alerts found. All products are adequately stocked."}
             </Alert>
           ) : (
             <>
@@ -418,11 +462,11 @@ export default function Alerts() {
                         hover
                         sx={{
                           backgroundColor:
-                            alert.stockStatus === 'critical'
-                              ? 'rgba(244, 67, 54, 0.08)'
-                              : alert.stockStatus === 'low'
-                              ? 'rgba(255, 152, 0, 0.12)'
-                              : 'inherit',
+                            alert.stockStatus === "critical"
+                              ? "rgba(244, 67, 54, 0.08)"
+                              : alert.stockStatus === "low"
+                              ? "rgba(255, 152, 0, 0.12)"
+                              : "inherit",
                         }}
                       >
                         <TableCell>
@@ -454,8 +498,12 @@ export default function Alerts() {
                         </TableCell>
                         <TableCell align="right">
                           {alert.recommendedReorderQuantity > 0 ? (
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                              {alert.recommendedReorderQuantity.toLocaleString()} units
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600, color: "primary.main" }}
+                            >
+                              {alert.recommendedReorderQuantity.toLocaleString()}{" "}
+                              units
                             </Typography>
                           ) : (
                             <Typography variant="body2" color="text.secondary">
@@ -467,36 +515,55 @@ export default function Alerts() {
                           <Chip
                             label={alert.status}
                             color={
-                              alert.status === 'active'
-                                ? 'error'
-                                : alert.status === 'acknowledged'
-                                ? 'warning'
-                                : alert.status === 'resolved'
-                                ? 'success'
-                                : 'default'
+                              alert.status === "active"
+                                ? "error"
+                                : alert.status === "acknowledged"
+                                ? "warning"
+                                : alert.status === "resolved"
+                                ? "success"
+                                : "default"
                             }
                             size="small"
                             variant="outlined"
                           />
                         </TableCell>
                         <TableCell>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 0.5,
+                            }}
+                          >
                             {alert.warehouses.map((wh) => (
-                              <Typography key={wh.warehouseId} variant="caption" color="text.secondary">
-                                {wh.warehouseName}: {wh.quantity.toLocaleString()}
+                              <Typography
+                                key={wh.warehouseId}
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {wh.warehouseName}:{" "}
+                                {wh.quantity.toLocaleString()}
                               </Typography>
                             ))}
                           </Box>
                         </TableCell>
                         <TableCell align="center">
-                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                            {alert.status === 'active' && (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 0.5,
+                              justifyContent: "center",
+                            }}
+                          >
+                            {alert.status === "active" && (
                               <>
                                 <Tooltip title="Acknowledge">
                                   <IconButton
                                     size="small"
                                     color="warning"
-                                    onClick={() => handleOpenDialog(alert, 'acknowledge')}
+                                    onClick={() =>
+                                      handleOpenDialog(alert, "acknowledge")
+                                    }
                                   >
                                     <CheckCircleIcon fontSize="small" />
                                   </IconButton>
@@ -505,7 +572,9 @@ export default function Alerts() {
                                   <IconButton
                                     size="small"
                                     color="success"
-                                    onClick={() => handleOpenDialog(alert, 'resolve')}
+                                    onClick={() =>
+                                      handleOpenDialog(alert, "resolve")
+                                    }
                                   >
                                     <CheckCircleIcon fontSize="small" />
                                   </IconButton>
@@ -516,7 +585,9 @@ export default function Alerts() {
                               <IconButton
                                 size="small"
                                 color="default"
-                                onClick={() => handleOpenDialog(alert, 'dismiss')}
+                                onClick={() =>
+                                  handleOpenDialog(alert, "dismiss")
+                                }
                               >
                                 <CancelIcon fontSize="small" />
                               </IconButton>
@@ -552,28 +623,34 @@ export default function Alerts() {
           )}
         </DashboardCard>
       </Box>
-
       {/* Action Dialog */}
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>
-          {actionType === 'acknowledge'
-            ? 'Acknowledge Alert'
-            : actionType === 'resolve'
-            ? 'Resolve Alert'
-            : 'Dismiss Alert'}
+          {actionType === "acknowledge"
+            ? "Acknowledge Alert"
+            : actionType === "resolve"
+            ? "Resolve Alert"
+            : "Dismiss Alert"}
         </DialogTitle>
         <DialogContent>
           {selectedAlert && (
             <>
               <DialogContentText>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Product:</strong> {selectedAlert.productName} ({selectedAlert.productSku})
+                  <strong>Product:</strong> {selectedAlert.productName} (
+                  {selectedAlert.productSku})
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Current Stock:</strong> {selectedAlert.currentStock.toLocaleString()} units
+                  <strong>Current Stock:</strong>{" "}
+                  {selectedAlert.currentStock.toLocaleString()} units
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 2 }}>
-                  <strong>Stock Status:</strong>{' '}
+                  <strong>Stock Status:</strong>{" "}
                   <Chip
                     label={selectedAlert.stockStatus.toUpperCase()}
                     color={getStatusColor(selectedAlert.stockStatus)}
@@ -600,13 +677,19 @@ export default function Alerts() {
           <Button
             onClick={handleUpdateAlert}
             variant="contained"
-            color={actionType === 'resolve' ? 'success' : actionType === 'acknowledge' ? 'warning' : 'default'}
+            color={
+              actionType === "resolve"
+                ? "success"
+                : actionType === "acknowledge"
+                ? "warning"
+                : "default"
+            }
           >
-            {actionType === 'acknowledge'
-              ? 'Acknowledge'
-              : actionType === 'resolve'
-              ? 'Resolve'
-              : 'Dismiss'}
+            {actionType === "acknowledge"
+              ? "Acknowledge"
+              : actionType === "resolve"
+              ? "Resolve"
+              : "Dismiss"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -615,12 +698,16 @@ export default function Alerts() {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </AppLayout>
+    </>
   );
 }

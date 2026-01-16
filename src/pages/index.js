@@ -28,9 +28,14 @@ import {
   FormControl,
   LinearProgress,
   useTheme,
+  Menu,
+  CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import {
   AreaChart,
   Area,
@@ -43,6 +48,8 @@ import {
 import { useDashboardData } from '@/hooks/useDashboardData';
 import DashboardCard from '@/components/DashboardCard';
 import WarningIcon from '@mui/icons-material/Warning';
+import { exportToCsv } from '@/lib/exportCsv';
+import { exportToPdf } from '@/lib/exportPdf';
 
 const LOW_STOCK_THRESHOLD = 10;
 
@@ -59,6 +66,9 @@ export default function Home() {
   const [sortDirection, setSortDirection] = useState('asc');
   const [timeframe, setTimeframe] = useState('month');
   const [selectedWarehouse, setSelectedWarehouse] = useState('all');
+  const [exportMenuAnchor, setExportMenuAnchor] = useState(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportSnackbar, setExportSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   // Theme-aware chart colors
   const chartGridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : '#e4e1d8';
@@ -234,6 +244,118 @@ export default function Home() {
   }, [kpis.totalUnits, kpis.warehouseCount]);
 
   const topProductMax = chartData.topProducts[0]?.quantity || 0;
+
+  const handleExportMenuOpen = (event) => {
+    setExportMenuAnchor(event.currentTarget);
+  };
+
+  const handleExportMenuClose = () => {
+    setExportMenuAnchor(null);
+  };
+
+  const prepareExportData = () => {
+    const columns = [
+      { id: 'name', label: 'Product Name' },
+      { id: 'sku', label: 'SKU' },
+      { id: 'category', label: 'Category' },
+      { id: 'totalQuantity', label: 'Total Stock' },
+      { id: 'totalValue', label: 'Total Value' },
+      { id: 'status', label: 'Status' },
+    ];
+
+    const rows = inventoryOverview.map((item) => ({
+      name: item.name,
+      sku: item.sku,
+      category: item.category,
+      totalQuantity: item.totalQuantity,
+      totalValue: item.totalValue,
+      status: item.status,
+    }));
+
+    return { columns, rows };
+  };
+
+  const handleExportCsv = () => {
+    if (inventoryOverview.length === 0) {
+      setExportSnackbar({
+        open: true,
+        message: 'No data to export',
+        severity: 'warning',
+      });
+      handleExportMenuClose();
+      return;
+    }
+
+    setExporting(true);
+    handleExportMenuClose();
+
+    try {
+      const { columns, rows } = prepareExportData();
+      exportToCsv({
+        filename: 'inventory-overview',
+        columns,
+        rows,
+      });
+      setExportSnackbar({
+        open: true,
+        message: 'CSV export completed successfully',
+        severity: 'success',
+      });
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      setExportSnackbar({
+        open: true,
+        message: 'Failed to export CSV',
+        severity: 'error',
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (inventoryOverview.length === 0) {
+      setExportSnackbar({
+        open: true,
+        message: 'No data to export',
+        severity: 'warning',
+      });
+      handleExportMenuClose();
+      return;
+    }
+
+    setExporting(true);
+    handleExportMenuClose();
+
+    try {
+      const { columns, rows } = prepareExportData();
+      await exportToPdf({
+        title: 'Inventory Overview Report',
+        subtitle: `Generated on ${new Date().toLocaleDateString()}${searchQuery ? ' (Filtered)' : ''}`,
+        columns,
+        rows,
+        filename: 'inventory-overview',
+      });
+      setExportSnackbar({
+        open: true,
+        message: 'PDF export completed successfully',
+        severity: 'success',
+      });
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      setExportSnackbar({
+        open: true,
+        message: 'Failed to export PDF',
+        severity: 'error',
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleCloseExportSnackbar = () => {
+    setExportSnackbar({ ...exportSnackbar, open: false });
+  };
 
   return (
     <Box>
@@ -687,23 +809,47 @@ export default function Home() {
             title="Inventory overview"
             subtitle="Search, sort, and manage current stock positions"
             action={
-              <TextField
-                placeholder="Search products..."
-                size="small"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setPage(0);
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ width: { xs: '100%', sm: 260 } }}
-              />
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={exporting ? <CircularProgress size={16} /> : <FileDownloadIcon />}
+                  endIcon={<ArrowDropDownIcon />}
+                  onClick={handleExportMenuOpen}
+                  disabled={exporting || inventoryOverview.length === 0}
+                >
+                  Export
+                </Button>
+                <Menu
+                  anchorEl={exportMenuAnchor}
+                  open={Boolean(exportMenuAnchor)}
+                  onClose={handleExportMenuClose}
+                >
+                  <MenuItem onClick={handleExportCsv} disabled={exporting || inventoryOverview.length === 0}>
+                    Export CSV
+                  </MenuItem>
+                  <MenuItem onClick={handleExportPdf} disabled={exporting || inventoryOverview.length === 0}>
+                    Export PDF
+                  </MenuItem>
+                </Menu>
+                <TextField
+                  placeholder="Search products..."
+                  size="small"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(0);
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ width: { xs: '100%', sm: 260 } }}
+                />
+              </Box>
             }
           >
             {loading ? (
@@ -847,6 +993,17 @@ export default function Home() {
           </DashboardCard>
         </Grid>
       </Grid>
+
+      <Snackbar
+        open={exportSnackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseExportSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseExportSnackbar} severity={exportSnackbar.severity} sx={{ width: '100%' }}>
+          {exportSnackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

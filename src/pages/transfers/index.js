@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -23,11 +23,16 @@ import {
   Paper,
   Divider,
   CircularProgress,
-} from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import AppLayout from '@/components/AppLayout';
-import DashboardCard from '@/components/DashboardCard';
+  Menu,
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import AppLayout from "@/components/AppLayout";
+import DashboardCard from "@/components/DashboardCard";
+import { exportToCsv } from "@/lib/exportCsv";
+import { exportToPdf } from "@/lib/exportPdf";
 
 export default function Transfers() {
   // Data state
@@ -39,21 +44,27 @@ export default function Transfers() {
   const [error, setError] = useState(null);
 
   // Form state
-  const [productId, setProductId] = useState('');
-  const [fromWarehouseId, setFromWarehouseId] = useState('');
-  const [toWarehouseId, setToWarehouseId] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [note, setNote] = useState('');
+  const [productId, setProductId] = useState("");
+  const [fromWarehouseId, setFromWarehouseId] = useState("");
+  const [toWarehouseId, setToWarehouseId] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   // Table state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [filterWarehouseId, setFilterWarehouseId] = useState('all');
-  const [filterProductId, setFilterProductId] = useState('all');
+  const [filterWarehouseId, setFilterWarehouseId] = useState("all");
+  const [filterProductId, setFilterProductId] = useState("all");
 
   // Feedback state
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const [exportMenuAnchor, setExportMenuAnchor] = useState(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -63,19 +74,20 @@ export default function Transfers() {
     setLoading(true);
     setError(null);
     try {
-      const [productsData, warehousesData, transfersData, stockData] = await Promise.all([
-        fetch('/api/products').then((res) => res.json()),
-        fetch('/api/warehouses').then((res) => res.json()),
-        fetch('/api/transfers').then((res) => res.json()),
-        fetch('/api/stock').then((res) => res.json()),
-      ]);
+      const [productsData, warehousesData, transfersData, stockData] =
+        await Promise.all([
+          fetch("/api/products").then((res) => res.json()),
+          fetch("/api/warehouses").then((res) => res.json()),
+          fetch("/api/transfers").then((res) => res.json()),
+          fetch("/api/stock").then((res) => res.json()),
+        ]);
       setProducts(productsData);
       setWarehouses(warehousesData);
       setTransfers(transfersData);
       setStock(stockData);
     } catch (err) {
-      setError('Failed to load data. Please try again.');
-      console.error('Error fetching data:', err);
+      setError("Failed to load data. Please try again.");
+      console.error("Error fetching data:", err);
     } finally {
       setLoading(false);
     }
@@ -85,7 +97,9 @@ export default function Transfers() {
   const availableStock = useMemo(() => {
     if (!productId || !fromWarehouseId) return null;
     const stockItem = stock.find(
-      (s) => s.productId === parseInt(productId) && s.warehouseId === parseInt(fromWarehouseId)
+      (s) =>
+        s.productId === parseInt(productId) &&
+        s.warehouseId === parseInt(fromWarehouseId)
     );
     return stockItem ? stockItem.quantity : 0;
   }, [productId, fromWarehouseId, stock]);
@@ -113,10 +127,10 @@ export default function Transfers() {
     setError(null);
 
     try {
-      const response = await fetch('/api/transfers', {
-        method: 'POST',
+      const response = await fetch("/api/transfers", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           productId: parseInt(productId),
@@ -131,16 +145,16 @@ export default function Transfers() {
 
       if (!response.ok) {
         if (response.status === 409) {
-          throw new Error(data.message || 'Insufficient stock for transfer');
+          throw new Error(data.message || "Insufficient stock for transfer");
         } else if (response.status === 400) {
           const errorMsg = data.errors
-            ? data.errors.map((e) => e.message).join(', ')
-            : data.message || 'Validation failed';
+            ? data.errors.map((e) => e.message).join(", ")
+            : data.message || "Validation failed";
           throw new Error(errorMsg);
         } else if (response.status === 404) {
-          throw new Error(data.message || 'Product or warehouse not found');
+          throw new Error(data.message || "Product or warehouse not found");
         } else {
-          throw new Error(data.message || 'Failed to create transfer');
+          throw new Error(data.message || "Failed to create transfer");
         }
       }
 
@@ -148,24 +162,24 @@ export default function Transfers() {
       setSnackbar({
         open: true,
         message: `Transfer completed successfully! ${quantity} units moved.`,
-        severity: 'success',
+        severity: "success",
       });
 
       // Reset form
-      setProductId('');
-      setFromWarehouseId('');
-      setToWarehouseId('');
-      setQuantity('');
-      setNote('');
+      setProductId("");
+      setFromWarehouseId("");
+      setToWarehouseId("");
+      setQuantity("");
+      setNote("");
 
       // Refresh data
       await fetchData();
     } catch (err) {
-      setError(err.message || 'Failed to create transfer');
+      setError(err.message || "Failed to create transfer");
       setSnackbar({
         open: true,
-        message: err.message || 'Failed to create transfer',
-        severity: 'error',
+        message: err.message || "Failed to create transfer",
+        severity: "error",
       });
     } finally {
       setSubmitting(false);
@@ -176,14 +190,16 @@ export default function Transfers() {
   const filteredTransfers = useMemo(() => {
     let filtered = [...transfers];
 
-    if (filterWarehouseId !== 'all') {
+    if (filterWarehouseId !== "all") {
       const warehouseIdNum = parseInt(filterWarehouseId);
       filtered = filtered.filter(
-        (t) => t.fromWarehouseId === warehouseIdNum || t.toWarehouseId === warehouseIdNum
+        (t) =>
+          t.fromWarehouseId === warehouseIdNum ||
+          t.toWarehouseId === warehouseIdNum
       );
     }
 
-    if (filterProductId !== 'all') {
+    if (filterProductId !== "all") {
       const productIdNum = parseInt(filterProductId);
       filtered = filtered.filter((t) => t.productId === productIdNum);
     }
@@ -192,7 +208,10 @@ export default function Transfers() {
   }, [transfers, filterWarehouseId, filterProductId]);
 
   const paginatedTransfers = useMemo(() => {
-    return filteredTransfers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    return filteredTransfers.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
   }, [filteredTransfers, page, rowsPerPage]);
 
   const handleChangePage = (event, newPage) => {
@@ -208,14 +227,132 @@ export default function Transfers() {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleExportMenuOpen = (event) => {
+    setExportMenuAnchor(event.currentTarget);
+  };
+
+  const handleExportMenuClose = () => {
+    setExportMenuAnchor(null);
+  };
+
+  const prepareExportData = () => {
+    const columns = [
+      { id: "dateTime", label: "Date/Time" },
+      { id: "product", label: "Product" },
+      { id: "transfer", label: "Transfer" },
+      { id: "quantity", label: "Quantity" },
+      { id: "status", label: "Status" },
+      { id: "note", label: "Note" },
+    ];
+
+    const rows = filteredTransfers.map((transfer) => ({
+      dateTime: new Date(transfer.createdAt).toLocaleString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      product: transfer.productName,
+      transfer: `${transfer.fromWarehouseName} → ${transfer.toWarehouseName}`,
+      quantity: transfer.quantity,
+      status: transfer.status,
+      note: transfer.note || "",
+    }));
+
+    return { columns, rows };
+  };
+
+  const handleExportCsv = () => {
+    if (filteredTransfers.length === 0) {
+      setSnackbar({
+        open: true,
+        message: "No data to export",
+        severity: "warning",
+      });
+      handleExportMenuClose();
+      return;
+    }
+
+    setExporting(true);
+    handleExportMenuClose();
+
+    try {
+      const { columns, rows } = prepareExportData();
+      exportToCsv({
+        filename: "stock-transfers",
+        columns,
+        rows,
+      });
+      setSnackbar({
+        open: true,
+        message: "CSV export completed successfully",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to export CSV",
+        severity: "error",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (filteredTransfers.length === 0) {
+      setSnackbar({
+        open: true,
+        message: "No data to export",
+        severity: "warning",
+      });
+      handleExportMenuClose();
+      return;
+    }
+
+    setExporting(true);
+    handleExportMenuClose();
+
+    try {
+      const { columns, rows } = prepareExportData();
+      await exportToPdf({
+        title: "Stock Transfers Report",
+        subtitle: `Generated on ${new Date().toLocaleDateString()}${
+          filterWarehouseId !== "all" || filterProductId !== "all"
+            ? " (Filtered)"
+            : ""
+        }`,
+        columns,
+        rows,
+        filename: "stock-transfers",
+      });
+      setSnackbar({
+        open: true,
+        message: "PDF export completed successfully",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to export PDF",
+        severity: "error",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
-    <AppLayout>
-      <Box>
+    <>
+      <Box sx={{ width: "100%", maxWidth: "100%" }}>
         <Box
           sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
             mb: 3,
           }}
         >
@@ -263,7 +400,7 @@ export default function Transfers() {
                       value={productId}
                       onChange={(e) => {
                         setProductId(e.target.value);
-                        setQuantity('');
+                        setQuantity("");
                       }}
                       label="Product"
                     >
@@ -284,9 +421,9 @@ export default function Transfers() {
                       onChange={(e) => {
                         setFromWarehouseId(e.target.value);
                         if (e.target.value === toWarehouseId) {
-                          setToWarehouseId('');
+                          setToWarehouseId("");
                         }
-                        setQuantity('');
+                        setQuantity("");
                       }}
                       label="From Warehouse"
                     >
@@ -298,8 +435,13 @@ export default function Transfers() {
                     </Select>
                   </FormControl>
                   {productId && fromWarehouseId && availableStock !== null && (
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                      Available stock: <strong>{availableStock.toLocaleString()} units</strong>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mt: 0.5, display: "block" }}
+                    >
+                      Available stock:{" "}
+                      <strong>{availableStock.toLocaleString()} units</strong>
                     </Typography>
                   )}
                 </Grid>
@@ -333,21 +475,24 @@ export default function Transfers() {
                     value={quantity}
                     onChange={(e) => {
                       const val = e.target.value;
-                      if (val === '' || (!isNaN(val) && parseInt(val) > 0)) {
+                      if (val === "" || (!isNaN(val) && parseInt(val) > 0)) {
                         setQuantity(val);
                       }
                     }}
                     inputProps={{ min: 1, step: 1 }}
                     error={
-                      quantity !== '' &&
+                      quantity !== "" &&
                       (parseInt(quantity) <= 0 ||
                         !Number.isInteger(parseFloat(quantity)) ||
-                        (availableStock !== null && parseInt(quantity) > availableStock))
+                        (availableStock !== null &&
+                          parseInt(quantity) > availableStock))
                     }
                     helperText={
-                      quantity !== '' && availableStock !== null && parseInt(quantity) > availableStock
+                      quantity !== "" &&
+                      availableStock !== null &&
+                      parseInt(quantity) > availableStock
                         ? `Exceeds available stock (${availableStock})`
-                        : 'Must be a positive integer'
+                        : "Must be a positive integer"
                     }
                   />
                 </Grid>
@@ -366,15 +511,17 @@ export default function Transfers() {
 
                 <Grid item xs={12}>
                   <Divider sx={{ my: 1 }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}
+                  >
                     <Button
                       variant="outlined"
                       onClick={() => {
-                        setProductId('');
-                        setFromWarehouseId('');
-                        setToWarehouseId('');
-                        setQuantity('');
-                        setNote('');
+                        setProductId("");
+                        setFromWarehouseId("");
+                        setToWarehouseId("");
+                        setQuantity("");
+                        setNote("");
                       }}
                       disabled={submitting}
                     >
@@ -385,9 +532,15 @@ export default function Transfers() {
                       variant="contained"
                       color="primary"
                       disabled={!isFormValid || submitting}
-                      startIcon={submitting ? <CircularProgress size={16} /> : <SendIcon />}
+                      startIcon={
+                        submitting ? (
+                          <CircularProgress size={16} />
+                        ) : (
+                          <SendIcon />
+                        )
+                      }
                     >
-                      {submitting ? 'Processing...' : 'Execute Transfer'}
+                      {submitting ? "Processing..." : "Execute Transfer"}
                     </Button>
                   </Box>
                 </Grid>
@@ -401,7 +554,48 @@ export default function Transfers() {
           title="Transfer History"
           subtitle="View all stock transfers with filtering and pagination"
           action={
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                flexWrap: "wrap",
+                alignItems: "center",
+              }}
+            >
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={
+                  exporting ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <FileDownloadIcon />
+                  )
+                }
+                endIcon={<ArrowDropDownIcon />}
+                onClick={handleExportMenuOpen}
+                disabled={exporting || filteredTransfers.length === 0}
+              >
+                Export
+              </Button>
+              <Menu
+                anchorEl={exportMenuAnchor}
+                open={Boolean(exportMenuAnchor)}
+                onClose={handleExportMenuClose}
+              >
+                <MenuItem
+                  onClick={handleExportCsv}
+                  disabled={exporting || filteredTransfers.length === 0}
+                >
+                  Export CSV
+                </MenuItem>
+                <MenuItem
+                  onClick={handleExportPdf}
+                  disabled={exporting || filteredTransfers.length === 0}
+                >
+                  Export PDF
+                </MenuItem>
+              </Menu>
               <FormControl size="small" sx={{ minWidth: 180 }}>
                 <InputLabel>Filter by Warehouse</InputLabel>
                 <Select
@@ -447,9 +641,9 @@ export default function Transfers() {
             </Box>
           ) : filteredTransfers.length === 0 ? (
             <Alert severity="info" sx={{ mt: 2 }}>
-              {filterWarehouseId !== 'all' || filterProductId !== 'all'
-                ? 'No transfers match your filters.'
-                : 'No transfers recorded yet. Create your first transfer above.'}
+              {filterWarehouseId !== "all" || filterProductId !== "all"
+                ? "No transfers match your filters."
+                : "No transfers recorded yet. Create your first transfer above."}
             </Alert>
           ) : (
             <>
@@ -469,13 +663,16 @@ export default function Transfers() {
                     {paginatedTransfers.map((transfer) => (
                       <TableRow key={transfer.id} hover>
                         <TableCell>
-                          {new Date(transfer.createdAt).toLocaleString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                          {new Date(transfer.createdAt).toLocaleString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -486,12 +683,23 @@ export default function Transfers() {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
                             <Typography variant="body2" color="text.secondary">
                               {transfer.fromWarehouseName}
                             </Typography>
-                            <SwapHorizIcon sx={{ fontSize: 18, color: 'primary.main' }} />
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            <SwapHorizIcon
+                              sx={{ fontSize: 18, color: "primary.main" }}
+                            />
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600 }}
+                            >
                               {transfer.toWarehouseName}
                             </Typography>
                           </Box>
@@ -504,14 +712,18 @@ export default function Transfers() {
                         <TableCell align="center">
                           <Chip
                             label={transfer.status}
-                            color={transfer.status === 'completed' ? 'success' : 'error'}
+                            color={
+                              transfer.status === "completed"
+                                ? "success"
+                                : "error"
+                            }
                             size="small"
                             variant="outlined"
                           />
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" color="text.secondary">
-                            {transfer.note || '-'}
+                            {transfer.note || "-"}
                           </Typography>
                         </TableCell>
                       </TableRow>
@@ -538,12 +750,16 @@ export default function Transfers() {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </AppLayout>
+    </>
   );
 }
