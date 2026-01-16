@@ -265,19 +265,19 @@ export default function Stock() {
         </Box>
 
         <TableContainer component={Paper}>
-          <Table>
+          <Table aria-label="Stock levels table">
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>Product</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>Warehouse</strong>
                 </TableCell>
-                <TableCell align="right">
+                <TableCell component="th" scope="col" align="right">
                   <strong>Quantity</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>Actions</strong>
                 </TableCell>
               </TableRow>
@@ -294,6 +294,7 @@ export default function Stock() {
                       component={Link}
                       href={`/stock/edit/${item.id}`}
                       size="small"
+                      aria-label={`Edit stock record for ${getProductName(item.productId)}`}
                     >
                       <EditIcon />
                     </IconButton>
@@ -301,6 +302,7 @@ export default function Stock() {
                       color="error"
                       onClick={() => handleClickOpen(item.id)}
                       size="small"
+                      aria-label={`Delete stock record for ${getProductName(item.productId)}`}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -318,10 +320,15 @@ export default function Stock() {
           </Table>
         </TableContainer>
 
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>Delete Stock Record</DialogTitle>
+        <Dialog 
+          open={open} 
+          onClose={handleClose}
+          aria-labelledby="delete-stock-dialog-title"
+          aria-describedby="delete-stock-dialog-description"
+        >
+          <DialogTitle id="delete-stock-dialog-title">Delete Stock Record</DialogTitle>
           <DialogContent>
-            <DialogContentText>
+            <DialogContentText id="delete-stock-dialog-description">
               Are you sure you want to delete this stock record? This action
               cannot be undone.
             </DialogContentText>
@@ -346,6 +353,8 @@ export default function Stock() {
             onClose={handleCloseSnackbar}
             severity={snackbar.severity}
             sx={{ width: "100%" }}
+            role={snackbar.severity === "error" ? "alert" : "status"}
+            aria-live={snackbar.severity === "error" ? "assertive" : "polite"}
           >
             {snackbar.message}
           </Alert>

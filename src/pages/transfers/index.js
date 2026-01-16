@@ -387,15 +387,20 @@ export default function Transfers() {
           sx={{ mb: 3 }}
         >
           {loading ? (
-            <Box sx={{ py: 4 }}>
-              <Skeleton variant="rectangular" height={300} />
-            </Box>
+            <>
+              <Box sx={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }} aria-live="polite" aria-atomic="true">
+                Loading transfer form...
+              </Box>
+              <Box sx={{ py: 4 }}>
+                <Skeleton variant="rectangular" height={300} aria-hidden="true" />
+              </Box>
+            </>
           ) : (
             <form onSubmit={handleSubmit}>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth required>
-                    <InputLabel>Product</InputLabel>
+                    <InputLabel id="transfer-product-label">Product</InputLabel>
                     <Select
                       value={productId}
                       onChange={(e) => {
@@ -403,6 +408,7 @@ export default function Transfers() {
                         setQuantity("");
                       }}
                       label="Product"
+                      labelId="transfer-product-label"
                     >
                       {products.map((product) => (
                         <MenuItem key={product.id} value={product.id}>
@@ -415,7 +421,7 @@ export default function Transfers() {
 
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth required>
-                    <InputLabel>From Warehouse</InputLabel>
+                    <InputLabel id="transfer-from-warehouse-label">From Warehouse</InputLabel>
                     <Select
                       value={fromWarehouseId}
                       onChange={(e) => {
@@ -426,6 +432,7 @@ export default function Transfers() {
                         setQuantity("");
                       }}
                       label="From Warehouse"
+                      labelId="transfer-from-warehouse-label"
                     >
                       {warehouses.map((warehouse) => (
                         <MenuItem key={warehouse.id} value={warehouse.id}>
@@ -448,11 +455,12 @@ export default function Transfers() {
 
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth required>
-                    <InputLabel>To Warehouse</InputLabel>
+                    <InputLabel id="transfer-to-warehouse-label">To Warehouse</InputLabel>
                     <Select
                       value={toWarehouseId}
                       onChange={(e) => setToWarehouseId(e.target.value)}
                       label="To Warehouse"
+                      labelId="transfer-to-warehouse-label"
                       disabled={!fromWarehouseId}
                     >
                       {warehouses
@@ -492,8 +500,24 @@ export default function Transfers() {
                       availableStock !== null &&
                       parseInt(quantity) > availableStock
                         ? `Exceeds available stock (${availableStock})`
+                        : quantity !== "" &&
+                          (parseInt(quantity) <= 0 ||
+                            !Number.isInteger(parseFloat(quantity)))
+                        ? "Must be a positive integer"
                         : "Must be a positive integer"
                     }
+                    FormHelperTextProps={{
+                      id: "quantity-helper-text",
+                      role: quantity !== "" &&
+                        (parseInt(quantity) <= 0 ||
+                          !Number.isInteger(parseFloat(quantity)) ||
+                          (availableStock !== null &&
+                            parseInt(quantity) > availableStock))
+                        ? "alert"
+                        : undefined,
+                    }}
+                    aria-describedby="quantity-helper-text"
+                    id="transfer-quantity"
                   />
                 </Grid>
 
@@ -597,7 +621,7 @@ export default function Transfers() {
                 </MenuItem>
               </Menu>
               <FormControl size="small" sx={{ minWidth: 180 }}>
-                <InputLabel>Filter by Warehouse</InputLabel>
+                <InputLabel id="filter-warehouse-label">Filter by Warehouse</InputLabel>
                 <Select
                   value={filterWarehouseId}
                   onChange={(e) => {
@@ -605,6 +629,7 @@ export default function Transfers() {
                     setPage(0);
                   }}
                   label="Filter by Warehouse"
+                  labelId="filter-warehouse-label"
                 >
                   <MenuItem value="all">All Warehouses</MenuItem>
                   {warehouses.map((warehouse) => (
@@ -615,7 +640,7 @@ export default function Transfers() {
                 </Select>
               </FormControl>
               <FormControl size="small" sx={{ minWidth: 180 }}>
-                <InputLabel>Filter by Product</InputLabel>
+                <InputLabel id="filter-product-label">Filter by Product</InputLabel>
                 <Select
                   value={filterProductId}
                   onChange={(e) => {
@@ -623,6 +648,7 @@ export default function Transfers() {
                     setPage(0);
                   }}
                   label="Filter by Product"
+                  labelId="filter-product-label"
                 >
                   <MenuItem value="all">All Products</MenuItem>
                   {products.map((product) => (
@@ -636,9 +662,14 @@ export default function Transfers() {
           }
         >
           {loading ? (
-            <Box sx={{ mt: 2 }}>
-              <Skeleton variant="rectangular" height={400} />
-            </Box>
+            <>
+              <Box sx={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }} aria-live="polite" aria-atomic="true">
+                Loading transfer history...
+              </Box>
+              <Box sx={{ mt: 2 }}>
+                <Skeleton variant="rectangular" height={400} aria-hidden="true" />
+              </Box>
+            </>
           ) : filteredTransfers.length === 0 ? (
             <Alert severity="info" sx={{ mt: 2 }}>
               {filterWarehouseId !== "all" || filterProductId !== "all"
@@ -648,15 +679,15 @@ export default function Transfers() {
           ) : (
             <>
               <TableContainer sx={{ mt: 2 }}>
-                <Table>
+                <Table aria-label="Stock transfers history table">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Date/Time</TableCell>
-                      <TableCell>Product</TableCell>
-                      <TableCell>Transfer</TableCell>
-                      <TableCell align="right">Quantity</TableCell>
-                      <TableCell align="center">Status</TableCell>
-                      <TableCell>Note</TableCell>
+                      <TableCell component="th" scope="col">Date/Time</TableCell>
+                      <TableCell component="th" scope="col">Product</TableCell>
+                      <TableCell component="th" scope="col">Transfer</TableCell>
+                      <TableCell component="th" scope="col" align="right">Quantity</TableCell>
+                      <TableCell component="th" scope="col" align="center">Status</TableCell>
+                      <TableCell component="th" scope="col">Note</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -719,6 +750,7 @@ export default function Transfers() {
                             }
                             size="small"
                             variant="outlined"
+                            aria-label={`Transfer status: ${transfer.status}`}
                           />
                         </TableCell>
                         <TableCell>
@@ -756,6 +788,8 @@ export default function Transfers() {
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           sx={{ width: "100%" }}
+          role={snackbar.severity === "error" ? "alert" : "status"}
+          aria-live={snackbar.severity === "error" ? "assertive" : "polite"}
         >
           {snackbar.message}
         </Alert>

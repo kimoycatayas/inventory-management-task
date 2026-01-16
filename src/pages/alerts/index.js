@@ -442,17 +442,17 @@ export default function Alerts() {
           ) : (
             <>
               <TableContainer sx={{ mt: 2 }}>
-                <Table>
+                <Table aria-label="Stock alerts table">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Product</TableCell>
-                      <TableCell align="right">Current Stock</TableCell>
-                      <TableCell align="right">Reorder Point</TableCell>
-                      <TableCell align="center">Stock Status</TableCell>
-                      <TableCell align="right">Recommended Order</TableCell>
-                      <TableCell align="center">Alert Status</TableCell>
-                      <TableCell>Warehouses</TableCell>
-                      <TableCell align="center">Actions</TableCell>
+                      <TableCell component="th" scope="col">Product</TableCell>
+                      <TableCell component="th" scope="col" align="right">Current Stock</TableCell>
+                      <TableCell component="th" scope="col" align="right">Reorder Point</TableCell>
+                      <TableCell component="th" scope="col" align="center">Stock Status</TableCell>
+                      <TableCell component="th" scope="col" align="right">Recommended Order</TableCell>
+                      <TableCell component="th" scope="col" align="center">Alert Status</TableCell>
+                      <TableCell component="th" scope="col">Warehouses</TableCell>
+                      <TableCell component="th" scope="col" align="center">Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -629,8 +629,9 @@ export default function Alerts() {
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="alert-action-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="alert-action-dialog-title">
           {actionType === "acknowledge"
             ? "Acknowledge Alert"
             : actionType === "resolve"
@@ -704,6 +705,8 @@ export default function Alerts() {
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           sx={{ width: "100%" }}
+          role={snackbar.severity === "error" ? "alert" : "status"}
+          aria-live={snackbar.severity === "error" ? "assertive" : "polite"}
         >
           {snackbar.message}
         </Alert>

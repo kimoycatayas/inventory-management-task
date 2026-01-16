@@ -118,6 +118,61 @@ export const getTheme = (mode) => {
           root: {
             borderRadius: 10,
             padding: '8px 16px',
+            '&:focus-visible': {
+              outline: `2px solid ${isDark ? '#8bd69b' : '#2e7d32'}`,
+              outlineOffset: '2px',
+            },
+          },
+        },
+      },
+      MuiIconButton: {
+        styleOverrides: {
+          root: {
+            '&:focus-visible': {
+              outline: `2px solid ${isDark ? '#8bd69b' : '#2e7d32'}`,
+              outlineOffset: '2px',
+            },
+          },
+        },
+      },
+      MuiLink: {
+        styleOverrides: {
+          root: {
+            '&:focus-visible': {
+              outline: `2px solid ${isDark ? '#8bd69b' : '#2e7d32'}`,
+              outlineOffset: '2px',
+              borderRadius: '2px',
+            },
+          },
+        },
+      },
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root:focus-within': {
+              outline: `2px solid ${isDark ? '#8bd69b' : '#2e7d32'}`,
+              outlineOffset: '2px',
+            },
+          },
+        },
+      },
+      MuiSelect: {
+        styleOverrides: {
+          root: {
+            '&:focus-visible': {
+              outline: `2px solid ${isDark ? '#8bd69b' : '#2e7d32'}`,
+              outlineOffset: '2px',
+            },
+          },
+        },
+      },
+      MuiFab: {
+        styleOverrides: {
+          root: {
+            '&:focus-visible': {
+              outline: `2px solid ${isDark ? '#8bd69b' : '#2e7d32'}`,
+              outlineOffset: '2px',
+            },
           },
         },
       },

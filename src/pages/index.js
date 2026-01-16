@@ -432,11 +432,16 @@ export default function Home() {
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {loading ? (
-          Array.from({ length: 5 }).map((_, index) => (
-            <Grid key={index} item xs={12} sm={6} md={4}>
-              <Skeleton variant="rectangular" height={120} />
-            </Grid>
-          ))
+          <>
+            <Box sx={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }} aria-live="polite" aria-atomic="true">
+              Loading dashboard data...
+            </Box>
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Grid key={index} item xs={12} sm={6} md={4}>
+                <Skeleton variant="rectangular" height={120} aria-hidden="true" />
+              </Grid>
+            ))}
+          </>
         ) : (
           <>
             <Grid item xs={12} sm={6} md={4}>
@@ -705,14 +710,14 @@ export default function Home() {
                   </Typography>
                 </Alert>
                 <TableContainer>
-                  <Table size="small">
+                  <Table size="small" aria-label="Critical stock alerts table">
                     <TableHead>
                       <TableRow>
-                        <TableCell>Product</TableCell>
-                        <TableCell align="right">Current Stock</TableCell>
-                        <TableCell align="right">Reorder Point</TableCell>
-                        <TableCell align="right">Recommended Order</TableCell>
-                        <TableCell align="center">Actions</TableCell>
+                        <TableCell component="th" scope="col">Product</TableCell>
+                        <TableCell component="th" scope="col" align="right">Current Stock</TableCell>
+                        <TableCell component="th" scope="col" align="right">Reorder Point</TableCell>
+                        <TableCell component="th" scope="col" align="right">Recommended Order</TableCell>
+                        <TableCell component="th" scope="col" align="center">Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -850,6 +855,7 @@ export default function Home() {
                       </InputAdornment>
                     ),
                   }}
+                  aria-label="Search products by name, SKU, or category"
                   sx={{ width: { xs: '100%', sm: 260 } }}
                 />
               </Box>
@@ -868,10 +874,10 @@ export default function Home() {
             ) : (
               <>
                 <TableContainer sx={{ mt: 2 }}>
-                  <Table>
+                  <Table aria-label="Inventory overview table">
                     <TableHead>
                       <TableRow>
-                        <TableCell>
+                        <TableCell component="th" scope="col">
                           <TableSortLabel
                             active={sortField === 'name'}
                             direction={sortField === 'name' ? sortDirection : 'asc'}
@@ -880,7 +886,7 @@ export default function Home() {
                             Product Name
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell>
+                        <TableCell component="th" scope="col">
                           <TableSortLabel
                             active={sortField === 'sku'}
                             direction={sortField === 'sku' ? sortDirection : 'asc'}
@@ -889,7 +895,7 @@ export default function Home() {
                             SKU
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell>
+                        <TableCell component="th" scope="col">
                           <TableSortLabel
                             active={sortField === 'category'}
                             direction={sortField === 'category' ? sortDirection : 'asc'}
@@ -898,7 +904,7 @@ export default function Home() {
                             Category
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell component="th" scope="col" align="right">
                           <TableSortLabel
                             active={sortField === 'totalQuantity'}
                             direction={sortField === 'totalQuantity' ? sortDirection : 'asc'}
@@ -907,7 +913,7 @@ export default function Home() {
                             Total Stock
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell component="th" scope="col" align="right">
                           <TableSortLabel
                             active={sortField === 'totalValue'}
                             direction={sortField === 'totalValue' ? sortDirection : 'asc'}
@@ -916,8 +922,8 @@ export default function Home() {
                             Total Value
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell align="center">Status</TableCell>
-                        <TableCell align="center">Actions</TableCell>
+                        <TableCell component="th" scope="col" align="center">Status</TableCell>
+                        <TableCell component="th" scope="col" align="center">Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -955,6 +961,7 @@ export default function Home() {
                               }
                               size="small"
                               variant="outlined"
+                              aria-label={`Stock status: ${item.status}`}
                             />
                           </TableCell>
                           <TableCell align="center">
@@ -1003,7 +1010,13 @@ export default function Home() {
         onClose={handleCloseExportSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert onClose={handleCloseExportSnackbar} severity={exportSnackbar.severity} sx={{ width: '100%' }}>
+        <Alert 
+          onClose={handleCloseExportSnackbar} 
+          severity={exportSnackbar.severity} 
+          sx={{ width: '100%' }}
+          role={exportSnackbar.severity === 'error' ? 'alert' : 'status'}
+          aria-live={exportSnackbar.severity === 'error' ? 'assertive' : 'polite'}
+        >
           {exportSnackbar.message}
         </Alert>
       </Snackbar>

@@ -47,6 +47,7 @@ export default function AppLayout({ children }) {
           ml: isDesktop ? `${drawerWidth}px` : 0,
           transition: "margin 0.2s ease",
         }}
+        id="main-content"
       >
         <Box sx={{ px: { xs: 2, md: 4 }, py: { xs: 3, md: 4 } }}>
           <Box sx={{ maxWidth: 1240, mx: "auto" }}>{children}</Box>

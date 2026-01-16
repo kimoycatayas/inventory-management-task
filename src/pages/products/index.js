@@ -253,25 +253,25 @@ export default function Products() {
         </Box>
 
         <TableContainer component={Paper}>
-          <Table>
+          <Table aria-label="Products table">
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>SKU</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>Name</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>Category</strong>
                 </TableCell>
-                <TableCell align="right">
+                <TableCell component="th" scope="col" align="right">
                   <strong>Unit Cost</strong>
                 </TableCell>
-                <TableCell align="right">
+                <TableCell component="th" scope="col" align="right">
                   <strong>Reorder Point</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>Actions</strong>
                 </TableCell>
               </TableRow>
@@ -283,7 +283,7 @@ export default function Products() {
                   <TableCell>{product.name}</TableCell>
                   <TableCell>{product.category}</TableCell>
                   <TableCell align="right">
-                    ${product.unitCost.toFixed(2)}
+                    {product.unitCost != null ? `$${product.unitCost.toFixed(2)}` : 'N/A'}
                   </TableCell>
                   <TableCell align="right">{product.reorderPoint}</TableCell>
                   <TableCell>
@@ -292,6 +292,7 @@ export default function Products() {
                       component={Link}
                       href={`/products/edit/${product.id}`}
                       size="small"
+                      aria-label={`Edit product ${product.name}`}
                     >
                       <EditIcon />
                     </IconButton>
@@ -299,6 +300,7 @@ export default function Products() {
                       color="error"
                       onClick={() => handleClickOpen(product.id)}
                       size="small"
+                      aria-label={`Delete product ${product.name}`}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -316,10 +318,15 @@ export default function Products() {
           </Table>
         </TableContainer>
 
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>Delete Product</DialogTitle>
+        <Dialog 
+          open={open} 
+          onClose={handleClose}
+          aria-labelledby="delete-product-dialog-title"
+          aria-describedby="delete-product-dialog-description"
+        >
+          <DialogTitle id="delete-product-dialog-title">Delete Product</DialogTitle>
           <DialogContent>
-            <DialogContentText>
+            <DialogContentText id="delete-product-dialog-description">
               Are you sure you want to delete this product? This action cannot
               be undone.
             </DialogContentText>
@@ -344,6 +351,8 @@ export default function Products() {
             onClose={handleCloseSnackbar}
             severity={snackbar.severity}
             sx={{ width: "100%" }}
+            role={snackbar.severity === "error" ? "alert" : "status"}
+            aria-live={snackbar.severity === "error" ? "assertive" : "polite"}
           >
             {snackbar.message}
           </Alert>

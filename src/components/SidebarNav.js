@@ -24,6 +24,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { useThemeMode } from "@/context/ThemeModeContext";
+import Logo from "@/components/Logo";
 
 const navItems = [
   { label: "Home", href: "/", icon: <HomeIcon fontSize="small" /> },
@@ -65,20 +66,24 @@ export default function SidebarNav({
   const router = useRouter();
   const theme = useTheme();
   const { mode, toggleMode } = useThemeMode();
-  const isDark = mode === 'dark';
-  
+  const isDark = mode === "dark";
+
   // Use theme-aware colors
-  const sidebarBg = isDark ? '#1a1a1a' : '#141414';
+  const sidebarBg = isDark ? "#1a1a1a" : "#141414";
   const sidebarBorder = theme.palette.divider;
-  const activeBg = isDark ? 'rgba(46, 125, 50, 0.24)' : 'rgba(46, 125, 50, 0.18)';
-  const sidebarText = isDark ? '#e0e0e0' : '#f5f5f5';
-  const sidebarTextSecondary = isDark ? '#b0b0b0' : '#c7c7c7';
-  const activeText = isDark ? '#8bd69b' : '#dff1e0';
-  const iconColor = isDark ? '#9a9a9a' : '#9a9a9a';
-  const activeIconColor = isDark ? '#8bd69b' : '#8bd69b';
+  const activeBg = isDark
+    ? "rgba(46, 125, 50, 0.24)"
+    : "rgba(46, 125, 50, 0.18)";
+  const sidebarText = isDark ? "#e0e0e0" : "#f5f5f5";
+  const sidebarTextSecondary = isDark ? "#b0b0b0" : "#c7c7c7";
+  const activeText = isDark ? "#8bd69b" : "#dff1e0";
+  const iconColor = isDark ? "#9a9a9a" : "#9a9a9a";
+  const activeIconColor = isDark ? "#8bd69b" : "#8bd69b";
 
   const drawerContent = (
     <Box
+      component="nav"
+      aria-label="Main navigation"
       sx={{
         height: "100%",
         display: "flex",
@@ -90,35 +95,30 @@ export default function SidebarNav({
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          flexDirection: "column",
           px: 2,
           py: 2,
         }}
       >
-        {!collapsed && (
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: sidebarText }}>
-            GreenSupply Co
-          </Typography>
-        )}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <Tooltip title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
-            <IconButton
-              onClick={toggleMode}
-              sx={{ color: sidebarText }}
-              size="small"
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            mb: collapsed ? 1 : 0,
+          }}
+        >
+          {collapsed ? (
+            <Box
+              sx={{ width: "100%", display: "flex", justifyContent: "center" }}
             >
-              {isDark ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
-            <IconButton
-              onClick={isDesktop ? onCollapseToggle : onMobileToggle}
-              sx={{ color: sidebarText }}
-            >
-              <MenuIcon />
-            </IconButton>
-          </Tooltip>
+              <Logo collapsed={true} />
+            </Box>
+          ) : (
+            <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+              <Logo collapsed={false} />
+            </Box>
+          )}
         </Box>
       </Box>
       <Divider sx={{ borderColor: sidebarBorder }} />
@@ -131,6 +131,7 @@ export default function SidebarNav({
               component={Link}
               href={item.href}
               selected={isActive}
+              aria-current={isActive ? "page" : undefined}
               sx={{
                 mb: 1,
                 borderRadius: 2,
@@ -163,7 +164,12 @@ export default function SidebarNav({
         sx={{ px: 2, py: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}
       >
         <Avatar
-          sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main, fontSize: 14 }}
+          sx={{
+            width: 32,
+            height: 32,
+            bgcolor: theme.palette.primary.main,
+            fontSize: 14,
+          }}
         >
           IM
         </Avatar>
@@ -177,6 +183,43 @@ export default function SidebarNav({
             </Typography>
           </Box>
         )}
+      </Box>
+      <Divider sx={{ borderColor: sidebarBorder }} />
+      <Box
+        sx={{
+          px: 2,
+          py: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: collapsed ? "center" : "space-between",
+          gap: 0.5,
+        }}
+      >
+        <Tooltip
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          <IconButton
+            onClick={toggleMode}
+            sx={{ color: sidebarText }}
+            size="small"
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {isDark ? (
+              <LightModeIcon fontSize="small" />
+            ) : (
+              <DarkModeIcon fontSize="small" />
+            )}
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
+          <IconButton
+            onClick={isDesktop ? onCollapseToggle : onMobileToggle}
+            sx={{ color: sidebarText }}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <MenuIcon />
+          </IconButton>
+        </Tooltip>
       </Box>
     </Box>
   );

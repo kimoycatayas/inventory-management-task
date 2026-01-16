@@ -249,19 +249,19 @@ export default function Warehouses() {
         </Box>
 
         <TableContainer component={Paper}>
-          <Table>
+          <Table aria-label="Warehouses table">
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>Code</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>Name</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>Location</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell component="th" scope="col">
                   <strong>Actions</strong>
                 </TableCell>
               </TableRow>
@@ -278,6 +278,7 @@ export default function Warehouses() {
                       component={Link}
                       href={`/warehouses/edit/${warehouse.id}`}
                       size="small"
+                      aria-label={`Edit warehouse ${warehouse.name}`}
                     >
                       <EditIcon />
                     </IconButton>
@@ -285,6 +286,7 @@ export default function Warehouses() {
                       color="error"
                       onClick={() => handleClickOpen(warehouse.id)}
                       size="small"
+                      aria-label={`Delete warehouse ${warehouse.name}`}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -302,10 +304,17 @@ export default function Warehouses() {
           </Table>
         </TableContainer>
 
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>Delete Warehouse</DialogTitle>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="delete-warehouse-dialog-title"
+          aria-describedby="delete-warehouse-dialog-description"
+        >
+          <DialogTitle id="delete-warehouse-dialog-title">
+            Delete Warehouse
+          </DialogTitle>
           <DialogContent>
-            <DialogContentText>
+            <DialogContentText id="delete-warehouse-dialog-description">
               Are you sure you want to delete this warehouse? This action cannot
               be undone.
             </DialogContentText>
@@ -330,6 +339,8 @@ export default function Warehouses() {
             onClose={handleCloseSnackbar}
             severity={snackbar.severity}
             sx={{ width: "100%" }}
+            role={snackbar.severity === "error" ? "alert" : "status"}
+            aria-live={snackbar.severity === "error" ? "assertive" : "polite"}
           >
             {snackbar.message}
           </Alert>

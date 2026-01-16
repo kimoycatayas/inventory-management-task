@@ -107,7 +107,7 @@ export default function KeyboardShortcutsHelp({ open: controlledOpen, onOpen, on
       {/* Floating Action Button */}
       <Fab
         color="primary"
-        aria-label="Keyboard shortcuts"
+        aria-label="Show keyboard shortcuts help"
         onClick={handleOpen}
         sx={{
           position: 'fixed',
@@ -134,6 +134,8 @@ export default function KeyboardShortcutsHelp({ open: controlledOpen, onOpen, on
         onClose={handleClose}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="keyboard-shortcuts-title"
+        aria-describedby="keyboard-shortcuts-description"
         PaperProps={{
           sx: {
             borderRadius: 2,
@@ -148,11 +150,11 @@ export default function KeyboardShortcutsHelp({ open: controlledOpen, onOpen, on
             pb: 1,
           }}
         >
-          <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
+          <Typography variant="h6" component="h2" id="keyboard-shortcuts-title" sx={{ fontWeight: 600 }}>
             Keyboard shortcuts
           </Typography>
           <IconButton
-            aria-label="close"
+            aria-label="Close keyboard shortcuts dialog"
             onClick={handleClose}
             size="small"
             sx={{
@@ -163,7 +165,7 @@ export default function KeyboardShortcutsHelp({ open: controlledOpen, onOpen, on
           </IconButton>
         </DialogTitle>
         <Divider />
-        <DialogContent sx={{ pt: 3, pb: 3 }}>
+        <DialogContent sx={{ pt: 3, pb: 3 }} id="keyboard-shortcuts-description">
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {SHORTCUTS.map((shortcut, index) => (
               <Box
